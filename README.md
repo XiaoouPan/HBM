@@ -1,2 +1,3 @@
 # HBM
-Hierarchical Bayesian Models
+
+Hierarchical Bayesian Models for adaptive trials.
