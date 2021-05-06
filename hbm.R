@@ -73,3 +73,59 @@ posterior_simu2 <- function (dat, iter = 1) {
   ))
 }
 
+summary_posterior2 <- function (dataVal, mcmcVal) {
+  #value
+  response <- dataVal$response
+  all <- dataVal$all
+  
+  N <- dataVal$N
+  #number of patients
+  C <- dataVal$C
+  #number of clustering (3 default)
+  group <- dataVal$group
+  
+  #parm
+  prob <- mcmcVal$prob
+  theta <- mcmcVal$theta
+  
+  mumix <- mcmcVal$mumix
+  muprec <- mcmcVal$muprec
+  
+  #hyper parm
+  # # gamma <- 1/sqrt(0.000001);
+  # # alpha <- 0.001; beta <- 0.001;
+  #bayes factor
+  #summarize over all simulations
+  res1 <- 0
+  res2 <- 0
+  
+  for (n in 1:N) {
+    p1 <-
+      dbinom(
+        x = response[n],
+        size = all[n],
+        prob = prob[n, ],
+        log = T
+      )
+    
+    p2 <-
+      dnorm(
+        x = theta[n, ],
+        mean = mumix[group[n], ],
+        sd = 1 / sqrt(muprec[group[n], ]),
+        log = T
+      )
+    
+    res1 <- res1 + mean(p1, na.rm = T)
+    
+    res2 <- res2 + mean(p2, na.rm = T)
+    
+  }
+  res <- res1 + res2
+  
+  #print(res1);print(res2);print(res3);print(res4);
+  #only use the first part as bayes factor #return(res) as all parts
+  return(res)
+}
+
+
