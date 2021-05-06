@@ -129,3 +129,115 @@ summary_posterior2 <- function (dataVal, mcmcVal) {
 }
 
 
+nsub = 10
+N = 2
+p0 = 0.15
+p1 = 0.45
+e = e1 = e2 = 0.05
+k = 2
+prob = c(0.15, 0.15, 0.15, 0.15, 0.15)
+ninter = 5
+
+SC <- GetSC(nsub, N, p0, p1, e, e1, e2, prob, ninter)
+true_prob  <- SC$true_prob
+N <- SC$N # This is the number of subgroups
+
+obs_rr_init_orig <- SC$response/SC$all
+obs_rr_final_orig <- (SC$response2 - SC$response)/(SC$all2 - SC$all)
+obs_rr_total_orig <- (SC$response2)/(SC$all2)
+
+list_discard <- rep(FALSE, N)
+
+#interim analysis
+#initialize recorder for bayes factor of different clustering
+bayes_cluster2 <- NULL
+#to record the bayes factor for each cohort clustering
+group_rec <- NULL
+#to record the cohort clustering
+prob_rec <- NULL 
+prob_rec_up <- NULL
+prob_rec_down <- NULL
+#response rate for all clustering models;
+response_rate <- rep(NA, N)
+response_rate_up <- rep(NA, N)
+response_rate_down <- rep(NA, N)
+#
+post_prob_p0 <- rep(NA, N)
+post_prob_p0_p1 <- rep(NA, N)
+post_prob_p1 <- rep(NA, N)
+
+all_cluster <- permutations(n = 2,
+                            r = SC$N,
+                            repeats.allowed = T)
+for (i in 1:dim(all_cluster)[1]) { # for every cluster permutation for the groups
+  group <- all_cluster[i, ] # select a permutation of cluster assignments to each subgroupS
+  
+  group_rec <- rbind(group_rec, group)
+  
+  #cluster with hypothesis
+  dat <-
+    list(
+      response = SC$response,
+      all = SC$all,
+      N = SC$N,
+      C = 2,
+      group = group,
+      cutoff = SC$cutoff
+    )
+  
+  this_posterior <- posterior_simu2(dat) # generate draws from posterior using rjags
+  
+  # break the loop if posterior can't be generated
+  if (length(names(this_posterior)) == 0) {
+    break
+  }
+  mcmcVal = list(
+    prob = this_posterior$prob,
+    theta = this_posterior$theta,
+    mumix = this_posterior$mumix,
+    muprec = this_posterior$muprec
+  )
+  
+  prob_rec <- rbind(prob_rec, apply(this_posterior$prob, 1, mean))
+  
+  prob_rec_up <-
+    rbind(prob_rec_up,
+          apply(this_posterior$prob, 1, quantile, 0.975))
+  
+  prob_rec_down <-
+    rbind(prob_rec_down,
+          apply(this_posterior$prob, 1, quantile, 0.025))
+  
+  # Calculate the Bayes Factors for the interim analysis cluster permutations
+  res <- summary_posterior2(dataVal = dat, mcmcVal = mcmcVal)
+  
+  bayes_cluster2 <- c(bayes_cluster2, res)# this the result vector of BF after iterating thru every permutation
+  
+}
+
+best_cluster2 <- group_rec[which.max(bayes_cluster2), ]
+
+
+this_response <- prob_rec[which.max(bayes_cluster2), ]
+
+this_response_up <- prob_rec_up[which.max(bayes_cluster2), ]
+
+this_response_down <- prob_rec_down[which.max(bayes_cluster2), ]
+
+#get the cluster for unsorted original prob
+best_cluster2 <- best_cluster2
+
+list_discard[best_cluster2 == 1] <- TRUE # if in inactive cluster add to discard list
+
+list_keep <- !list_discard
+
+
+response_rate[list_discard] <- this_response[list_discard]
+
+response_rate_up[list_discard] <- this_response_up[list_discard]
+
+response_rate_down[list_discard] <- this_response_down[list_discard]
+
+post_prob_p0 <- as.numeric(response_rate <= p0)
+post_prob_p0_p1 <- as.numeric((response_rate > p0) & (response_rate <= p1))
+post_prob_p1 <- as.numeric(response_rate > p1) 
