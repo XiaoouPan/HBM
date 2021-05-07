@@ -37,7 +37,7 @@ GetSC <- function(nsub, N, p0, p1, e, e1, e2, prob, ninter) {
   )
 }
 
-posterior_simu2 <- function (dat, iter = 1) {
+posterior_simu2 <- function (dat, iter = 10) {
   thismodel <-
     try(jags.model(
       file = "basket.txt",
@@ -129,14 +129,14 @@ summary_posterior2 <- function (dataVal, mcmcVal) {
 }
 
 
-nsub = 10
+nsub = 20
 N = 2
 p0 = 0.15
 p1 = 0.45
 e = e1 = e2 = 0.05
-k = 2
+k = 4
 prob = c(0.15, 0.15, 0.15, 0.15, 0.15)
-ninter = 5
+ninter = 10
 
 SC <- GetSC(nsub, N, p0, p1, e, e1, e2, prob, ninter)
 true_prob  <- SC$true_prob
@@ -237,6 +237,8 @@ response_rate[list_discard] <- this_response[list_discard]
 response_rate_up[list_discard] <- this_response_up[list_discard]
 
 response_rate_down[list_discard] <- this_response_down[list_discard]
+
+response_rate
 
 post_prob_p0 <- as.numeric(response_rate <= p0)
 post_prob_p0_p1 <- as.numeric((response_rate > p0) & (response_rate <= p1))
