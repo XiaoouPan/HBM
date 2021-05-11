@@ -134,7 +134,7 @@ N = 5
 p0 = 0.15
 p1 = 0.45
 e = e1 = e2 = 0.05
-prob = c(0.15, 0.15, 0.15, 0.15, 0.15)
+prob = c(0.45, 0.45, 0.45, 0.45, 0.45)
 ninter = 5
 
 SC <- GetSC(nsub, N, p0, p1, e, e1, e2, prob, ninter)
