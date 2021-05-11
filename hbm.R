@@ -37,7 +37,7 @@ GetSC <- function(nsub, N, p0, p1, e, e1, e2, prob, ninter) {
   )
 }
 
-posterior_simu2 <- function (dat, iter = 10) {
+posterior_simu2 <- function (dat, iter = 1000) {
   thismodel <-
     try(jags.model(
       file = "basket.txt",
