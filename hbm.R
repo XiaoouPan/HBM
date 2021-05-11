@@ -134,12 +134,11 @@ N = 5
 p0 = 0.15
 p1 = 0.45
 e = e1 = e2 = 0.05
-prob = 0.15
+prob = c(0.15, 0.15, 0.15, 0.15, 0.15)
 ninter = 5
 
 SC <- GetSC(nsub, N, p0, p1, e, e1, e2, prob, ninter)
 true_prob  <- SC$true_prob
-N <- SC$N # This is the number of subgroups
 
 obs_rr_init_orig <- SC$response/SC$all
 obs_rr_final_orig <- (SC$response2 - SC$response)/(SC$all2 - SC$all)
@@ -165,9 +164,7 @@ post_prob_p0 <- rep(NA, N)
 post_prob_p0_p1 <- rep(NA, N)
 post_prob_p1 <- rep(NA, N)
 
-all_cluster <- permutations(n = 2,
-                            r = SC$N,
-                            repeats.allowed = T)
+all_cluster <- permutations(n = 2, r = SC$N, repeats.allowed = T)
 for (i in 1:dim(all_cluster)[1]) { # for every cluster permutation for the groups
   group <- all_cluster[i, ] # select a permutation of cluster assignments to each subgroupS
   
