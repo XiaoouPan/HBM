@@ -129,14 +129,13 @@ summary_posterior2 <- function (dataVal, mcmcVal) {
 }
 
 
-nsub = 20
-N = 2
+nsub = 10
+N = 5
 p0 = 0.15
 p1 = 0.45
 e = e1 = e2 = 0.05
-k = 4
-prob = c(0.15, 0.15, 0.15, 0.15, 0.15)
-ninter = 10
+prob = 0.15
+ninter = 5
 
 SC <- GetSC(nsub, N, p0, p1, e, e1, e2, prob, ninter)
 true_prob  <- SC$true_prob
