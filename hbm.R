@@ -4,7 +4,7 @@ library(rjags)
 library(gtools)
 
 GetSC <- function(nsub, N, p0, p1, e, e1, e2, prob, ninter) {
-  # N = 5 # number of subgroups
+  # N = 5 number of subgroups
   all = rep(ninter, N) # number of subjects in each subgroup during first stage
   all2 = rep(nsub, N) # number of subjects in each subgroup total
   
