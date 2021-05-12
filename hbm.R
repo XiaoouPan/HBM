@@ -58,7 +58,7 @@ posterior_simu2 <- function (dat, iter = 1000) {
     try(jags.samples(
       thismodel,
       variable.names = c('prob', 'theta', 'mumix', 'muprec'),
-      n.iter = 4000
+      n.iter = 1000
     ),
     silent = T)
   ;
