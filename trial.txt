@@ -1,18 +1,21 @@
 # 3 outcomes clustering groups
 model { 
   for (i in 1:N) {
-    response[i]  <- step(underlie[i, 1])
-    activity[i]  <- underlie[i, 2]
-    underlie[i,] ~ dmnorm(mu[i, ], Omega) 
-    mu[i,1]      ~ dnorm(mumix[group[i]], muprec[group[i]])
-    mu[i,2]      ~ dnorm(mumix2[group[i]], muprec2[group[i]])
+    for (j in 1:ninter) {
+      response[i, j] <- step(underlie[1])
+      activity[i, j] <- underlie[2]
+      underlie ~ dmnorm(mu, Omega)
+      mu <- c(mu1[i], mu2[i])
+      mu1[i] ~ dnorm(mumix[group[i]], muprec[group[i]])
+      mu2[i] ~ dnorm(mumix2[group[i]], muprec2[group[i]])
+    }
   }
-  Omega       <- inverse(Sigma)
-  Sigma[1,1]  <- 1
-  Sigma[2,2]  <- 1
-  Sigma[1,2]  <- corr
-  Sigma[2,1]  <- corr
-  corr        ~ dunif(0, 1)
+  Omega <- inverse(Sigma)
+  Sigma[1,1] <- 1
+  Sigma[2,2] <- 1
+  Sigma[1,2] <- corr
+  Sigma[2,1] <- corr
+  corr ~ dunif(0, 1)
 
   mumix[1]   ~ dnorm(-1, 0.00001)T(,cutoff);
   muprec[1]  ~ dgamma(0.001, 0.001);

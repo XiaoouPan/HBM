@@ -15,10 +15,12 @@ geneData = function(N, C, p0, mu0, mu1, mu2, rho, ninter) {
   all = rep(ninter, N) # number of subjects in each subgroup during first stage
   response = activity = matrix(0, N, ninter)
   Sigma = matrix(c(1, rho, rho, 1), 2, 2)
+  rhoEst = rep(0, N)
   for (i in 1:N) {
     dat = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
     response[i, ] = as.numeric(dat[, 1] > 0)
     activity[i, ] = dat[, 2]
+    rhoEst[i] = biserial(activity[i, ], response[i, ])
   }
   cutoff = qnorm(p0)
   cutoff2 = mu0
@@ -29,33 +31,36 @@ geneData = function(N, C, p0, mu0, mu1, mu2, rho, ninter) {
       all = all,
       N = N,
       C = C,
+      ninter,
+      rhoEst = rhoEst,
       cutoff = cutoff,
       cutoff2 = cutoff2
     )
   )
 }
 
-posterior_simu = function (dat, iter = 1000) {
-  thismodel = jags.model(file = "basket.txt", 
+posterior_simu = function (dat, iter = 2000) {
+  thismodel = jags.model(file = "trial.txt", 
                          data = dat, 
-                         inits = list(mu = cbind(rep(0, dat$N), rep(1, dat$N)),
+                         inits = list(mu1 = rep(-0.5, dat$N),
+                                      mu2 = rep(1, dat$N),
                                       mumix = c(-1, -1, 1),
                                       muprec = c(1, 1, 1),
                                       mumix2 = c(0, 5, 0),
                                       muprec2 = c(1, 1, 1)),
                          n.adapt = iter)
   res.bugs = jags.samples(thismodel, 
-                          variable.names = c('mu', 'mumix', 'muprec', 'mumix2', 'muprec2'),
+                          variable.names = c('mu1', 'mu2', 'mumix', 'muprec', 'mumix2', 'muprec2'),
                           n.iter = iter)
   if (length(names(res.bugs)) == 0) {
     return(res.bugs)
   }
-  return (list(mu1 = matrix(res.bugs$mu[, 1], nrow = dat$N),
-               mu2 = matrix(res.bugs$mu[, 2], nrow = dat$N),
-               mumix = matrix(res.bugs$mumix, nrow = 3),
-               muprec = matrix(res.bugs$muprec, nrow = 3),
-               mumix2 = matrix(res.bugs$mumix2, nrow = 3),
-               muprec2 = matrix(res.bugs$muprec2, nrow = 3)))
+  return (list(mu1 = matrix(res.bugs$mu1, nrow = dat$N),
+               mu2 = matrix(res.bugs$mu2, nrow = dat$N),
+               mumix = matrix(res.bugs$mumix, nrow = dat$C),
+               muprec = matrix(res.bugs$muprec, nrow = dat$C),
+               mumix2 = matrix(res.bugs$mumix2, nrow = dat$C),
+               muprec2 = matrix(res.bugs$muprec2, nrow = dat$C)))
 }
 
 summary_posterior = function (dataVal, mcmcVal) {
@@ -114,10 +119,3 @@ true_mu = mu2
 
 
 
-n = 100
-mu = c(0, 3)
-Sigma = matrix(c(1, 0.5, 0.5, 1), 2, 2)
-dat = mvrnorm(n, mu, Sigma)
-X = as.numeric(dat[, 1] > 0)
-Y = dat[, 2]
-biserial(Y, X)
