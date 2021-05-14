@@ -7,39 +7,7 @@ library(mvtnorm)
 
 rm(list = ls())
 
-## generate data
-geneData = function(N, C, p0, mu0, mu1, mu2, rho, ninter) {
-  # N: number of subgroups
-  # p0, mu0: scalars, null values in the null hypothesis, may be changed to vectors later
-  # mu1, mu2: N-vectors
-  all = rep(ninter, N) # number of subjects in each subgroup during first stage
-  response = activity = matrix(0, N, ninter)
-  Sigma = matrix(c(1, rho, rho, 1), 2, 2)
-  rhoEst = rep(0, N)
-  for (i in 1:N) {
-    dat = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
-    response[i, ] = as.numeric(dat[, 1] > 0)
-    activity[i, ] = dat[, 2]
-    rhoEst[i] = biserial(activity[i, ], response[i, ])
-  }
-  cutoff = qnorm(p0)
-  cutoff2 = mu0
-  return(
-    list(
-      response = response,
-      activity = activity,
-      all = all,
-      N = N,
-      C = C,
-      ninter,
-      rhoEst = rhoEst,
-      cutoff = cutoff,
-      cutoff2 = cutoff2
-    )
-  )
-}
-
-posterior_simu = function (dat, iter = 2000) {
+posterior_simu = function (dat, C, iter = 2000) {
   thismodel = jags.model(file = "trial.txt", 
                          data = dat, 
                          inits = list(mu1 = rep(-0.5, dat$N),
@@ -57,10 +25,10 @@ posterior_simu = function (dat, iter = 2000) {
   }
   return (list(mu1 = matrix(res.bugs$mu1, nrow = dat$N),
                mu2 = matrix(res.bugs$mu2, nrow = dat$N),
-               mumix = matrix(res.bugs$mumix, nrow = dat$C),
-               muprec = matrix(res.bugs$muprec, nrow = dat$C),
-               mumix2 = matrix(res.bugs$mumix2, nrow = dat$C),
-               muprec2 = matrix(res.bugs$muprec2, nrow = dat$C)))
+               mumix = matrix(res.bugs$mumix, nrow = C),
+               muprec = matrix(res.bugs$muprec, nrow = C),
+               mumix2 = matrix(res.bugs$mumix2, nrow = C),
+               muprec2 = matrix(res.bugs$muprec2, nrow = C)))
 }
 
 summary_posterior = function (dataVal, mcmcVal) {
@@ -68,7 +36,8 @@ summary_posterior = function (dataVal, mcmcVal) {
   activity = dataVal$activity
   all = dataVal$all
   N = dataVal$N
-  C = dataVal$C
+  rhoEst = dat$rhoEst
+  ninter = dataVal$ninter
   group = dataVal$group
   
   #parm
@@ -79,20 +48,20 @@ summary_posterior = function (dataVal, mcmcVal) {
   mumix2 = mcmcVal$mumix2
   muprec2 = mcmcVal$muprec2
   
-  res1 = res2 = res3 = 0
+  rst = 0
   for (n in 1:N) {
-    p1 = dbinom(x = response[n], size = all[n], prob = pnorm(0, mu1[n, ]), log = T)
-    p2 = 
-    p2 = dnorm(x = theta[n, ], mean = mumix[group[n], ], sd = 1 / sqrt(muprec[group[n], ]), log = T)
-    
-    p3 = dnorm(x = mu[n, ], mean = mumix2[group[n], ], sd = 1 / sqrt(muprec2[group[n], ]), log = T)
-    
-    res1 <- res1 + mean(p1, na.rm = T)
-    res2 <- res2 + mean(p2, na.rm = T)
-    res3 = res3 + mean(p3, na.rm = T)
-    
+    for (j in 1:ninter) {
+      p1 = dnorm(activity[n, j], mean = mu2[n, ], sd = 1, log = TRUE)
+      p2 = pnorm(0, mean = mu1[n, ] + rhoEst * (activity[n, j] - mu2[n, ]), sd = 1, log.p = TRUE)
+      if (response[n, j] == 1) {
+        p2 = 1 - p2
+      }
+      p3 = dnorm(mu1[n, ], mean = mumix[group[n], ], sd = 1 / sqrt(muprec[group[n], ]), log = T)
+      p4 = dnorm(mu2[n, ], mean = mumix2[group[n], ], sd = 1 / sqrt(muprec2[group[n], ]), log = T)
+      rst = rst + mean(p1, na.rm = T) + mean(p2, na.rm = T) + mean(p3, na.rm = T) + mean(p4, na.rm = T)
+    }
   }
-  return (res1 + res2 + res3)
+  return (rst)
 }
 
 
@@ -100,22 +69,76 @@ summary_posterior = function (dataVal, mcmcVal) {
 ninter = 10
 N = 4
 C = 3
-M = 20
-post_prob_all = post_acti_all = matrix(0, N, M)
-all_cluster <- permutations(n = C, r = N, repeats.allowed = T)
+M = 1
 
 p0 = 0.3
 mu0 = 3
-prob = c(0.45, 0.45, 0.45, 0.45)
+prob = c(0.15, 0.15, 0.15, 0.45) ## true p
 mu1 = qnorm(prob)
-mu2 = c(1, 1, 5, 5)
+mu2 = c(1, 1, 5, 5) ## true mu
 rho = 0.5
-trial = geneData(N, C, p0, mu0, mu1, mu2, rho, ninter)
-true_p = prob
-true_mu = mu2
 
+all = rep(ninter, N) # number of subjects in each subgroup during first stage
+response = matrix(0, N, ninter)
+activity = matrix(0, N, ninter)
+Z = array(0, c(N, ninter, 2)) ## underlying bivariate normal, one of them is unobservable
+Sigma = matrix(c(1, rho, rho, 1), 2, 2)
+rhoEst = rep(0, N)
+cutoff = qnorm(p0)
+cutoff2 = mu0
+all_cluster = permutations(n = C, r = N, repeats.allowed = T)
+post_prob_all = post_prob_upper_all = post_prob_lower_all = post_acti_all = post_cluster_all = matrix(0, N, M)
 
+for (m in 1:M) {
+  set.seed(m)
+  ## Data generation
+  for (i in 1:N) {
+    Z[i, , ] = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
+    response[i, ] = as.numeric(Z[i, , 1] > 0)
+    activity[i, ] = Z[i, , 2]
+    if (length(unique(response[i, ])) == 1) {
+      rhoEst[i] = 0
+    } else {
+      rhoEst[i] = biserial(activity[i, ], response[i, ])
+    }
+  }
+  bayes_cluster = NULL
+  prob_rec = prob_upper_rec = prob_lower_rec = NULL 
+  mu_rec = NULL 
+  for (i in 1:nrow(all_cluster)) {
+    group = all_cluster[i, ]
+    dat = list(response = response,
+               activity = activity,
+               rhoEst = rhoEst,
+               N = N,
+               ninter = ninter,
+               group = group,
+               cutoff = cutoff,
+               cutoff2 = cutoff2)
+    this_posterior = posterior_simu(dat, C)
+    mcmcVal = list(mu1 = this_posterior$mu1,
+                   mu2 = this_posterior$mu2,
+                   mumix = this_posterior$mumix,
+                   muprec = this_posterior$muprec,
+                   mumix2 = this_posterior$mumix2,
+                   muprec2 = this_posterior$muprec2)
+    
+    this_prob = pnorm(0, mean = this_posterior$mu1, sd = 1, lower.tail = FALSE)
+    prob_rec = rbind(prob_rec, rowMeans(this_prob))
+    prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 0.975))
+    prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, 0.025))
+    mu_rec = rbind(mu_rec, rowMeans(this_posterior$mu2))
+    
+    # Calculate the Bayes Factors for the interim analysis cluster permutations
+    res = summary_posterior(dat, mcmcVal)
+    bayes_cluster = c(bayes_cluster, res)# this the result vector of BF after iterating thru every permutation
+  }
+  index = which.max(bayes_cluster)
+  post_cluster_all[, m] = all_cluster[index, ]
+  post_prob_all[, m] = prob_rec[index, ]
+  post_prob_upper_all[, m] = prob_upper_rec[index, ]
+  post_prob_lower_all[, m] = prob_lower_rec[index, ]
+  post_acti_all[, m] = mu_rec[index, ]
+}
 
-
-
-
+cbind(post_cluster_all, prob, post_prob_all, post_prob_lower_all, post_prob_upper_all, mu2, post_acti_all)
