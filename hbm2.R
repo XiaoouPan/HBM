@@ -8,18 +8,18 @@ library(mvtnorm)
 rm(list = ls())
 
 posterior_simu = function (dat, C, iter = 2000) {
-  thismodel = jags.model(file = "trial.txt", 
-                         data = dat, 
-                         inits = list(mu1 = rep(-0.5, dat$N),
-                                      mu2 = rep(1, dat$N),
-                                      mumix = c(-1, -1, 1),
-                                      muprec = c(1, 1, 1),
-                                      mumix2 = c(0, 5, 0),
-                                      muprec2 = c(1, 1, 1)),
-                         n.adapt = iter)
-  res.bugs = jags.samples(thismodel, 
-                          variable.names = c('mu1', 'mu2', 'mumix', 'muprec', 'mumix2', 'muprec2'),
-                          n.iter = iter)
+  thismodel = try(jags.model(file = "trial.txt", 
+                             data = dat, 
+                             inits = list(mu1 = rep(-0.5, dat$N),
+                                          mu2 = rep(1, dat$N),
+                                          mumix = c(-1, -1, 1),
+                                          muprec = c(1, 1, 1),
+                                          mumix2 = c(0, 5, 0),
+                                          muprec2 = c(1, 1, 1)),
+                             n.adapt = iter), silent = TRUE)
+  res.bugs = try(jags.samples(thismodel, 
+                              variable.names = c('mu1', 'mu2', 'mumix', 'muprec', 'mumix2', 'muprec2'),
+                              n.iter = iter), silent = TRUE)
   if (length(names(res.bugs)) == 0) {
     return(res.bugs)
   }
@@ -66,16 +66,16 @@ summary_posterior = function (dataVal, mcmcVal) {
 
 
 
-ninter = 10
+ninter = 20
 N = 4
 C = 3
-M = 1
+M = 10
 
 p0 = 0.3
 mu0 = 3
 prob = c(0.15, 0.15, 0.15, 0.45) ## true p
 mu1 = qnorm(prob)
-mu2 = c(1, 1, 5, 5) ## true mu
+mu2 = c(1, 5, 5, 5) ## true mu
 rho = 0.5
 
 all = rep(ninter, N) # number of subjects in each subgroup during first stage
@@ -99,7 +99,7 @@ for (m in 1:M) {
     if (length(unique(response[i, ])) == 1) {
       rhoEst[i] = 0
     } else {
-      rhoEst[i] = biserial(activity[i, ], response[i, ])
+      rhoEst[i] = as.numeric(cor.test(activity[i, ], response[i, ])$estimate)
     }
   }
   bayes_cluster = NULL
@@ -141,4 +141,13 @@ for (m in 1:M) {
   post_acti_all[, m] = mu_rec[index, ]
 }
 
-cbind(post_cluster_all, prob, post_prob_all, post_prob_lower_all, post_prob_upper_all, mu2, post_acti_all)
+rowMeans(post_cluster_all == c(1, 2, 2, 3))
+rowMeans(post_prob_all)
+rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob)
+rowMeans(post_acti_all)
+
+
+
+
+
+#cbind(post_cluster_all, prob, post_prob_all, post_prob_lower_all, post_prob_upper_all, mu2, post_acti_all)
