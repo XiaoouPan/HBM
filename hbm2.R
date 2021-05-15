@@ -2,7 +2,6 @@ library(MASS)
 library(coda)
 library(rjags) 
 library(gtools)
-library(psych)
 library(mvtnorm)
 
 rm(list = ls())
@@ -69,7 +68,7 @@ summary_posterior = function (dataVal, mcmcVal) {
 ninter = 20
 N = 4
 C = 3
-M = 10
+M = 1
 
 p0 = 0.3
 mu0 = 3
@@ -83,11 +82,11 @@ response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
 Z = array(0, c(N, ninter, 2)) ## underlying bivariate normal, one of them is unobservable
 Sigma = matrix(c(1, rho, rho, 1), 2, 2)
-rhoEst = rep(0, N)
 cutoff = qnorm(p0)
 cutoff2 = mu0
 all_cluster = permutations(n = C, r = N, repeats.allowed = T)
-post_prob_all = post_prob_upper_all = post_prob_lower_all = post_acti_all = post_cluster_all = matrix(0, N, M)
+post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(0, N, M)
+post_acti_all = post_acti_upper_all = post_acti_lower_all = post_cluster_all = matrix(0, N, M)
 
 for (m in 1:M) {
   set.seed(m)
@@ -96,20 +95,14 @@ for (m in 1:M) {
     Z[i, , ] = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
     response[i, ] = as.numeric(Z[i, , 1] > 0)
     activity[i, ] = Z[i, , 2]
-    if (length(unique(response[i, ])) == 1) {
-      rhoEst[i] = 0
-    } else {
-      rhoEst[i] = as.numeric(cor.test(activity[i, ], response[i, ])$estimate)
-    }
   }
   bayes_cluster = NULL
   prob_rec = prob_upper_rec = prob_lower_rec = NULL 
-  mu_rec = NULL 
+  mu_rec = mu_upper_rec = mu_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
     group = all_cluster[i, ]
     dat = list(response = response,
                activity = activity,
-               rhoEst = rhoEst,
                N = N,
                ninter = ninter,
                group = group,
@@ -127,7 +120,10 @@ for (m in 1:M) {
     prob_rec = rbind(prob_rec, rowMeans(this_prob))
     prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 0.975))
     prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, 0.025))
-    mu_rec = rbind(mu_rec, rowMeans(this_posterior$mu2))
+    this_mu = this_posterior$mu2
+    mu_rec = rbind(mu_rec, rowMeans(this_mu))
+    mu_upper_rec = rbind(mu_upper_rec, apply(this_mu, 1, quantile, 0.975))
+    mu_lower_rec = rbind(mu_lower_rec, apply(this_mu, 1, quantile, 0.025))
     
     # Calculate the Bayes Factors for the interim analysis cluster permutations
     res = summary_posterior(dat, mcmcVal)
@@ -139,13 +135,15 @@ for (m in 1:M) {
   post_prob_upper_all[, m] = prob_upper_rec[index, ]
   post_prob_lower_all[, m] = prob_lower_rec[index, ]
   post_acti_all[, m] = mu_rec[index, ]
+  post_acti_upper_all[, m] = mu_upper_rec[index, ]
+  post_acti_lower_all[, m] = mu_lower_rec[index, ]
 }
 
 rowMeans(post_cluster_all == c(1, 2, 2, 3))
 rowMeans(post_prob_all)
 rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob)
 rowMeans(post_acti_all)
-
+rowMeans(post_acti_lower_all < mu2 & post_mu_upper_all > mu2)
 
 
 
