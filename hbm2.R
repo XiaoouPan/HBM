@@ -6,7 +6,7 @@ library(mvtnorm)
 
 rm(list = ls())
 
-posterior_simu = function (dat, C, iter = 2000) {
+posterior_simu = function (dat, C, iter = 4000) {
   thismodel = try(jags.model(file = "trial.txt", 
                              data = dat, 
                              inits = list(mu1 = rep(-0.5, dat$N),
@@ -47,15 +47,16 @@ summary_posterior = function (dataVal, mcmcVal) {
   
   rst = 0
   for (n in 1:N) {
+    p3 = dnorm(mu1[n, ], mean = mumix[group[n], ], sd = 1 / sqrt(muprec[group[n], ]), log = T)
+    p4 = dnorm(mu2[n, ], mean = mumix2[group[n], ], sd = 1 / sqrt(muprec2[group[n], ]), log = T)
+    rst = rst + ninter * (mean(p3, na.rm = T) + mean(p4, na.rm = T))
     for (j in 1:ninter) {
       p1 = dnorm(activity[n, j], mean = mu2[n, ], sd = 1, log = TRUE)
       p2 = pnorm(0, mean = mu1[n, ] + rho[n, ] * (activity[n, j] - mu2[n, ]), sd = 1, log.p = TRUE)
       if (response[n, j] == 1) {
         p2 = 1 - p2
       }
-      p3 = dnorm(mu1[n, ], mean = mumix[group[n], ], sd = 1 / sqrt(muprec[group[n], ]), log = T)
-      p4 = dnorm(mu2[n, ], mean = mumix2[group[n], ], sd = 1 / sqrt(muprec2[group[n], ]), log = T)
-      rst = rst + mean(p1, na.rm = T) + mean(p2, na.rm = T) + mean(p3, na.rm = T) + mean(p4, na.rm = T)
+      rst = rst + mean(p1, na.rm = T) + mean(p2, na.rm = T)
     }
   }
   return (rst)
