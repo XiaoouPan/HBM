@@ -72,9 +72,9 @@ M = 1
 
 p0 = 0.3
 mu0 = 3
-prob = c(0.15, 0.15, 0.15, 0.45) ## true p
+prob = c(0.3, 0.3, 0.3, 0.3) ## true p
 mu1 = qnorm(prob)
-mu2 = c(1, 5, 5, 5) ## true mu
+mu2 = c(3, 3, 3, 3) ## true mu
 rho = 0.5
 
 all = rep(ninter, N) # number of subjects in each subgroup during first stage
