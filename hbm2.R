@@ -6,7 +6,7 @@ library(mvtnorm)
 
 rm(list = ls())
 
-posterior_simu = function (dat, C, iter = 4000) {
+posterior_simu = function (dat, C, iter = 2000) {
   thismodel = try(jags.model(file = "trial.txt", 
                              data = dat, 
                              inits = list(mu1 = rep(-0.5, dat$N),
