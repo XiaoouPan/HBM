@@ -4,4 +4,4 @@ Hierarchical Bayesian Models
 
 ## Description
 
-Hierarchical Bayesian Models for adaptive clinical trials.
+Hierarchical Bayesian Models with a latent clustering structure for adaptive clinical trials
