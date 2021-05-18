@@ -1,4 +1,5 @@
 ## Generate parameters based on posterior distributons
+## Activity is continuous
 posterior_simu = function (dat, C, iter = 2000) {
   thismodel = try(jags.model(file = "trial.txt", 
                              data = dat, 
@@ -22,7 +23,8 @@ posterior_simu = function (dat, C, iter = 2000) {
                muprec2 = matrix(res.bugs$muprec2, nrow = C)))
 }
 
-# Calculate Bayesian factors for each clustering permutation
+## Calculate Bayesian factors for each clustering permutation
+## Activity is continuous
 summary_posterior = function (dataVal, mcmcVal) {
   response = dataVal$response
   activity = dataVal$activity
