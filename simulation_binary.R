@@ -14,12 +14,11 @@ C = 3
 M = 1
 
 epsilon_p = 0.05
-epsilon_mu = 0.5
-p0 = 0.15
-mu0 = 3
-prob = c(0.15, 0.15, 0.15, 0.15) ## true p
-mu1 = qnorm(prob)
-mu2 = c(3, 3, 3, 3)  ## true mu
+p0 = c(0.15, 0.4)
+prob1 = c(0.15, 0.15, 0.15, 0.15) ## true p1
+mu1 = qnorm(prob1)
+prob2 = c(0.4, 0.4, 0.4, 0.4) ## true p2
+mu2 = qnorm(prob2)
 rho0 = 0.5
 cluster = c(1, 1, 1, 1)
 

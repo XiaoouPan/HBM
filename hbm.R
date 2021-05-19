@@ -65,11 +65,11 @@ posterior_bi_simu = function (dat, C, iter = 2000) {
   thismodel = try(jags.model(file = "trial.txt", 
                              data = dat, 
                              inits = list(mu1 = rep(-0.5, dat$N),
-                                          mu2 = rep(1, dat$N),
+                                          mu2 = rep(-0.1, dat$N),
                                           rho = rep(0.5, dat$N),
                                           mumix = c(-2, -2, 0),
                                           muprec = c(1, 1, 1),
-                                          mumix2 = c(1, 5, 1),
+                                          mumix2 = c(-0.5, 0.5, 0),
                                           muprec2 = c(1, 1, 1)),
                              n.adapt = iter), silent = TRUE)
   res.bugs = try(jags.samples(thismodel, 
