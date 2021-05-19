@@ -1,4 +1,4 @@
-# 3 outcomes clustering groups
+# 3 outcomes clustering groups with continuous activity
 
 model { 
   for (i in 1:N) {
