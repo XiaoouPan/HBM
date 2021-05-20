@@ -47,7 +47,6 @@ for (m in 1:M) {
     group = all_cluster[i, ]
     dat = list(response = response,
                activity = activity,
-               Z = Z,
                N = N,
                ninter = ninter,
                group = group,

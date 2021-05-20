@@ -6,7 +6,7 @@ model {
     for (j in 1:ninter) {
       response[i, j] ~ dinterval(Z[i, j, 1], 0)
       activity[i, j] ~ dinterval(Z[i, j, 2], 0)
-      Z[i, j, ] ~ dmnorm(c(mu1[i], mu2[i]), prec[i, 1:2, 1:2])
+      Z[i, j, 1:2] ~ dmnorm(c(mu1[i], mu2[i]), prec[i, 1:2, 1:2])
     }
     mu1[i] ~ dnorm(mumix[group[i]], muprec[group[i]])
     mu2[i] ~ dnorm(mumix2[group[i]], muprec2[group[i]])

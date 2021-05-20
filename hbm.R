@@ -64,7 +64,8 @@ summary_posterior = function (dataVal, mcmcVal) {
 posterior_bi_simu = function (dat, C, iter = 2000) {
   thismodel = try(jags.model(file = "trial_bi.txt", 
                              data = dat, 
-                             inits = list(mu1 = rep(-0.5, dat$N),
+                             inits = list(Z = array(c(dat$response, dat$activity), dim = c(dat$N, dat$ninter, 2)),
+                                          mu1 = rep(-0.5, dat$N),
                                           mu2 = rep(-0.1, dat$N),
                                           rho = rep(0.5, dat$N),
                                           mumix = c(-2, -2, 0),
