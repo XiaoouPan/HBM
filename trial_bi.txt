@@ -1,27 +1,32 @@
 # 3 outcomes clustering groups with binary activity
 
+
 model { 
   for (i in 1:N) {
     for (j in 1:ninter) {
-      response[i, j] ~ dbern(1 - prob[i, j])
-      prob[i, j] <- pnorm(0, mu1[i] + rho[i] * (activity[i, j] - mu2[i]), 1.0 / (1 - rho[i] * rho[i]))
-      activity[i, j] ~ dnorm(mu2[i], 1)
+      response[i, j] ~ dinterval(Z[i, j, 1], 0)
+      activity[i, j] ~ dinterval(Z[i, j, 2], 0)
+      Z[i, j, ] ~ dmnorm(c(mu1[i], mu2[i]), prec[i, 1:2, 1:2])
     }
-    rho[i] ~ dunif(0, 1)
     mu1[i] ~ dnorm(mumix[group[i]], muprec[group[i]])
     mu2[i] ~ dnorm(mumix2[group[i]], muprec2[group[i]])
+    prec[i, 1, 1] <- 1.0 / (1 - rho[i] * rho[i])
+    prec[i, 1, 2] <- -rho[i] / (1 - rho[i] * rho[i])
+    prec[i, 2, 1] <- -rho[i] / (1 - rho[i] * rho[i])
+    prec[i, 2, 2] <- 1.0 / (1 - rho[i] * rho[i])
+    rho[i] ~ dunif(0, 0.9)
   }
 
-  mumix[1] ~ dnorm(-2, 0.00001)T(,cutoff);
+  mumix[1] ~ dnorm(-2, 0.00001)T(,cutoff[1]);
   muprec[1] ~ dgamma(0.001, 0.001);
-  mumix[2] ~ dnorm(-2, 0.00001)T(,cutoff);
+  mumix[2] ~ dnorm(-2, 0.00001)T(,cutoff[1]);
   muprec[2] ~ dgamma(0.001, 0.001);
-  mumix[3] ~ dnorm(0, 0.00001)T(cutoff,);
+  mumix[3] ~ dnorm(0, 0.00001)T(cutoff[1],);
   muprec[3] ~ dgamma(0.001, 0.001);
-  mumix2[1] ~ dnorm(1, 0.00001)T(,cutoff2);
+  mumix2[1] ~ dnorm(-0.5, 0.00001)T(,cutoff[2]);
   muprec2[1] ~ dgamma(0.001, 0.001);
-  mumix2[2] ~ dnorm(5, 0.00001)T(cutoff2,);
+  mumix2[2] ~ dnorm(0.5, 0.00001)T(cutoff[2],);
   muprec2[2] ~ dgamma(0.001, 0.001);
-  mumix2[3] ~ dnorm(1, 0.00001);
+  mumix2[3] ~ dnorm(0, 0.00001);
   muprec2[3] ~ dgamma(0.001, 0.001);
 }

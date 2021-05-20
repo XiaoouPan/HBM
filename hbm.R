@@ -48,11 +48,11 @@ summary_posterior = function (dataVal, mcmcVal) {
     rst = rst + ninter * (mean(p3, na.rm = T) + mean(p4, na.rm = T))
     for (j in 1:ninter) {
       p1 = dnorm(activity[n, j], mean = mu2[n, ], sd = 1, log = TRUE)
-      p2 = pnorm(0, mean = mu1[n, ] + rho[n, ] * (activity[n, j] - mu2[n, ]), sd = 1, log.p = TRUE)
+      p2 = pnorm(0, mean = mu1[n, ] + rho[n, ] * (activity[n, j] - mu2[n, ]), sd = 1)
       if (response[n, j] == 1) {
         p2 = 1 - p2
       }
-      rst = rst + mean(p1, na.rm = T) + mean(p2, na.rm = T)
+      rst = rst + mean(p1, na.rm = T) + mean(log(p2), na.rm = T)
     }
   }
   return (rst)
@@ -62,7 +62,7 @@ summary_posterior = function (dataVal, mcmcVal) {
 ## Generate parameters based on posterior distributons
 ## Activity is binary
 posterior_bi_simu = function (dat, C, iter = 2000) {
-  thismodel = try(jags.model(file = "trial.txt", 
+  thismodel = try(jags.model(file = "trial_bi.txt", 
                              data = dat, 
                              inits = list(mu1 = rep(-0.5, dat$N),
                                           mu2 = rep(-0.1, dat$N),
@@ -107,13 +107,20 @@ summary_posterior_bi = function (dataVal, mcmcVal) {
     p3 = dnorm(mu1[n, ], mean = mumix[group[n], ], sd = 1 / sqrt(muprec[group[n], ]), log = T)
     p4 = dnorm(mu2[n, ], mean = mumix2[group[n], ], sd = 1 / sqrt(muprec2[group[n], ]), log = T)
     rst = rst + ninter * (mean(p3, na.rm = T) + mean(p4, na.rm = T))
+    p00 = pbivnorm(-mu1[n, ], -mu2[n, ], rho[n, ])
+    p01 = pnorm(0, mu1[n, ]) - p00
+    p10 = pnorm(0, mu2[n, ]) - p00
+    p11 = 1 - p00 - p01 - p10
     for (j in 1:ninter) {
-      p1 = dnorm(activity[n, j], mean = mu2[n, ], sd = 1, log = TRUE)
-      p2 = pnorm(0, mean = mu1[n, ] + rho[n, ] * (activity[n, j] - mu2[n, ]), sd = 1, log.p = TRUE)
-      if (response[n, j] == 1) {
-        p2 = 1 - p2
+      if (response[n, j] == 0 & activity[n, j] == 0) {
+        rst = rst + mean(log(p00), na.rm = T)
+      } else if (response[n, j] == 0 & activity[n, j] == 1) {
+        rst = rst + mean(log(p01), na.rm = T)
+      } else if (response[n, j] == 1 & activity[n, j] == 0) {
+        rst = rst + mean(log(p10), na.rm = T)
+      } else {
+        rst = rst + mean(log(p01), na.rm = T)
       }
-      rst = rst + mean(p1, na.rm = T) + mean(p2, na.rm = T)
     }
   }
   return (rst)
