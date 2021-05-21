@@ -62,14 +62,9 @@ summary_posterior = function (dataVal, mcmcVal) {
 ## Generate parameters based on posterior distributons
 ## Activity is binary
 posterior_bi_simu = function (dat, C, iter = 2000) {
-  Z.ini = array(0, dim = c(dat$N, dat$ninter, 2))
-  Sigma = matrix(c(1, 0.5, 0.5, 1), 2, 2)
-  for (i in 1:dat$N) {
-    Z.ini[i, , ] = mvrnorm(dat$ninter,  c(-0.5, -0.1), Sigma)
-  }
   thismodel = try(jags.model(file = "trial_bi.txt", 
                              data = dat, 
-                             inits = list(Z = Z.ini,
+                             inits = list(Z = array(c(dat$response, dat$activity), dim = c(dat$N, dat$ninter, 2)),
                                           mu1 = rep(-0.5, dat$N),
                                           mu2 = rep(-0.1, dat$N),
                                           rho = rep(0.5, dat$N),
