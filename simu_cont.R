@@ -15,13 +15,13 @@ M = 1
 
 epsilon_p = 0.05
 epsilon_mu = 0.5
-p0 = 0.15
-mu0 = 3
+p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate, can be different
+mu0 = c(3, 3, 3, 3) ## null activity level, can be different
 prob = c(0.15, 0.15, 0.15, 0.15) ## true p
 mu1 = qnorm(prob)
 mu2 = c(3, 3, 3, 3)  ## true mu
 rho0 = 0.5
-cluster = c(1, 1, 1, 1)
+cluster = c(1, 1, 1, 1) ## true cluster structure
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
