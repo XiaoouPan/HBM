@@ -7,7 +7,7 @@ model {
       prob[i, j] <- pnorm(0, mu1[i] + rho[i] * (activity[i, j] - mu2[i]), 1.0 / (1 - rho[i] * rho[i]))
       activity[i, j] ~ dnorm(mu2[i], 1)
     }
-    rho[i] ~ dunif(0, 1)
+    rho[i] ~ dunif(0, 0.9)
     mu1[i] ~ dnorm(mumix[group[i]], muprec[group[i]])
     mu2[i] ~ dnorm(mumix2[group[i]], muprec2[group[i]])
   }
