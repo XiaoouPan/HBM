@@ -8,7 +8,8 @@ rm(list = ls())
 
 source('hbm.R')
 
-ninter = 20
+ninter = 10
+ntotal = 20
 N = 4
 C = 3
 M = 1
