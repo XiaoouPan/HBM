@@ -11,8 +11,8 @@ posterior_simu_s1 = function (dat, C, iter = 2000) {
                               variable.names = c('mu2', 'mumix2', 'muprec2'),
                               n.iter = iter), silent = TRUE)
   return (list(mu2 = matrix(res.bugs$mu2, nrow = dat$N),
-               mumix2 = matrix(res.bugs$mumix2, nrow = C),
-               muprec2 = matrix(res.bugs$muprec2, nrow = C)))
+               mumix2 = matrix(res.bugs$mumix2, nrow = 2),
+               muprec2 = matrix(res.bugs$muprec2, nrow = 2)))
 }
 
 ## Calculate Bayesian factors for each clustering permutation

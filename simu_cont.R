@@ -8,8 +8,8 @@ rm(list = ls())
 
 source('hbm.R')
 
-ninter = 10
-ntotal = 20
+ninter = 20
+n1 = 10
 N = 4
 C = 3
 M = 1
@@ -31,8 +31,11 @@ Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 cutoff = qnorm(p0 + epsilon_p)
 cutoff2 = mu0 + epsilon_mu
 all_cluster = permutations(n = C, r = N, repeats.allowed = T)
-post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(0, N, M)
-post_acti_all = post_acti_upper_all = post_acti_lower_all = post_cluster_all = matrix(0, N, M)
+s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
+post_prob_all = post_acti_all = post_cluster_all = matrix(0, N, M)
+#post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(0, N, M)
+#post_acti_all = post_acti_upper_all = post_acti_lower_all = post_cluster_all = matrix(0, N, M)
+
 
 for (m in 1:M) {
   set.seed(m)
@@ -42,28 +45,26 @@ for (m in 1:M) {
     response[i, ] = as.numeric(Z[i, , 1] > 0)
     activity[i, ] = Z[i, , 2]
   }
+  
+  ## stage 1 with only sctivity
+  activity_s1 = activity[, 1:n1]
   bayes_cluster = NULL
-  prob_rec = prob_upper_rec = prob_lower_rec = NULL 
-  mu_rec = mu_upper_rec = mu_lower_rec = NULL 
-  for (i in 1:nrow(all_cluster)) {
-    group = all_cluster[i, ]
-    dat = list(response = response,
-               activity = activity,
+  #prob_rec = prob_upper_rec = prob_lower_rec = NULL 
+  #mu_rec = mu_upper_rec = mu_lower_rec = NULL 
+  mu_rec = NULL
+  for (i in 1:nrow(s1_cluster)) {
+    group = s1_cluster[i, ]
+    dat = list(activity = activity_s1,
                N = N,
-               ninter = ninter,
+               ninter = n1,
                group = group,
-               cutoff = cutoff,
                cutoff2 = cutoff2)
     this_posterior = posterior_simu(dat, C)
     
-    this_prob = pnorm(0, mean = this_posterior$mu1, sd = 1, lower.tail = FALSE)
-    prob_rec = rbind(prob_rec, rowMeans(this_prob))
-    prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 0.975))
-    prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, 0.025))
     this_mu = this_posterior$mu2
     mu_rec = rbind(mu_rec, rowMeans(this_mu))
-    mu_upper_rec = rbind(mu_upper_rec, apply(this_mu, 1, quantile, 0.975))
-    mu_lower_rec = rbind(mu_lower_rec, apply(this_mu, 1, quantile, 0.025))
+    #mu_upper_rec = rbind(mu_upper_rec, apply(this_mu, 1, quantile, 0.975))
+    #mu_lower_rec = rbind(mu_lower_rec, apply(this_mu, 1, quantile, 0.025))
     
     # Calculate the Bayes Factors for the interim analysis cluster permutations
     res = summary_posterior(dat, this_posterior)
@@ -77,6 +78,8 @@ for (m in 1:M) {
   post_acti_all[, m] = mu_rec[index, ]
   post_acti_upper_all[, m] = mu_upper_rec[index, ]
   post_acti_lower_all[, m] = mu_lower_rec[index, ]
+  
+  ## stage 2 with both response and activity
 }
 
 
