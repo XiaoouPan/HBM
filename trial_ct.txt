@@ -22,6 +22,6 @@ model {
   muprec2[1] ~ dgamma(0.001, 0.001);
   mumix2[2] ~ dnorm(5, 0.00001)T(cutoff2,);
   muprec2[2] ~ dgamma(0.001, 0.001);
-  mumix2[3] ~ dnorm(1, 0.00001);
+  mumix2[3] ~ dnorm(5, 0.00001);
   muprec2[3] ~ dgamma(0.001, 0.001);
 }

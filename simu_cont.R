@@ -15,8 +15,8 @@ M = 1
 
 epsilon_p = 0.05
 epsilon_mu = 0.5
-p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate, can be different
-mu0 = c(3, 3, 3, 3) ## null activity level, can be different
+p0 = 0.15 ## null response rate
+mu0 = 3 ## null activity level
 prob = c(0.15, 0.15, 0.15, 0.15) ## true p
 mu1 = qnorm(prob)
 mu2 = c(3, 3, 3, 3)  ## true mu

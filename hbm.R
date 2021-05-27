@@ -1,7 +1,7 @@
 ## Generate parameters based on posterior distributons
 ## Activity is continuous
 posterior_simu = function (dat, C, iter = 2000) {
-  thismodel = try(jags.model(file = "trial.txt", 
+  thismodel = try(jags.model(file = "trial_ct.txt", 
                              data = dat, 
                              inits = list(mu1 = rep(-0.5, dat$N),
                                           mu2 = rep(1, dat$N),
