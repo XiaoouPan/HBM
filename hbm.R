@@ -102,6 +102,57 @@ summary_posterior = function (dataVal, mcmcVal) {
 }
 
 
+
+#####################################################
+####  Biomarker activity is binary
+#####################################################
+
+## Generate parameters based on posterior distributons
+## Activity is continuous, stage 1 based on activity
+posterior_bi_simu_s1 = function (dat, C, iter = 2000) {
+  thismodel = try(jags.model(file = "trial_bi_s1.txt", 
+                             data = dat, 
+                             inits = list(mu2 = rep(1, dat$N),
+                                          mumix2 = c(1, 5),
+                                          muprec2 = c(1, 1)),
+                             n.adapt = iter), silent = TRUE)
+  res.bugs = try(jags.samples(thismodel, 
+                              variable.names = c('mu2', 'mumix2', 'muprec2'),
+                              n.iter = iter), silent = TRUE)
+  return (list(mu2 = matrix(res.bugs$mu2, nrow = dat$N),
+               mumix2 = matrix(res.bugs$mumix2, nrow = 2),
+               muprec2 = matrix(res.bugs$muprec2, nrow = 2)))
+}
+
+## Calculate Bayesian factors for each clustering permutation
+## Activity is continuous, stage 1 based on activity
+summary_posterior_bi_s1 = function (dataVal, mcmcVal) {
+  activity = dataVal$activity
+  N = dataVal$N
+  ninter = dataVal$ninter
+  group = dataVal$group
+  
+  #parm
+  mu2 = mcmcVal$mu2
+  mumix2 = mcmcVal$mumix2
+  muprec2 = mcmcVal$muprec2
+  
+  rst = 0
+  for (n in 1:N) {
+    p4 = dnorm(mu2[n, ], mean = mumix2[group[n], ], sd = 1 / sqrt(muprec2[group[n], ]), log = T)
+    rst = rst + ninter * mean(p4, na.rm = T)
+    for (j in 1:ninter) {
+      p1 = pnorm(0, mean = mu2[n, ], sd = 1)
+      if (response[n, j] == 1) {
+        p1 = 1 - p1
+      }
+      rst = rst + mean(log(p1), na.rm = T)
+    }
+  }
+  return (rst)
+}
+
+
 ## Generate parameters based on posterior distributons
 ## Activity is binary
 posterior_bi_simu = function (dat, C, iter = 2000) {
