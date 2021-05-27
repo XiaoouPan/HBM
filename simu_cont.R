@@ -127,6 +127,20 @@ for (m in 1:M) {
 }
 
 
+
+## Cluster report
+report = cbind(cluster,
+               rowMeans(post_cluster_all == 1),
+               rowMeans(post_cluster_all == 2),
+               rowMeans(post_cluster_all == 3))
+report = as.data.frame(report)
+colnames(report) = c("cluster", "C1", "C2", "C3")
+report
+
+
+
+
+### Details of estimates
 report = cbind(cluster,
                rowMeans(post_cluster_all == 1),
                rowMeans(post_cluster_all == 2),
