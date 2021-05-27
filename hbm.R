@@ -115,10 +115,10 @@ posterior_bi_simu_s1 = function (dat, C, iter = 2000) {
                              inits = list(mu2 = rep(1, dat$N),
                                           mumix2 = c(1, 5),
                                           muprec2 = c(1, 1)),
-                             n.adapt = iter), silent = TRUE)
+                             n.adapt = 1000), silent = TRUE)
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu2', 'mumix2', 'muprec2'),
-                              n.iter = iter), silent = TRUE)
+                              n.iter = 10000), silent = TRUE)
   return (list(mu2 = matrix(res.bugs$mu2, nrow = dat$N),
                mumix2 = matrix(res.bugs$mumix2, nrow = 2),
                muprec2 = matrix(res.bugs$muprec2, nrow = 2)))
@@ -142,7 +142,7 @@ summary_posterior_bi_s1 = function (dataVal, mcmcVal) {
     p4 = dnorm(mu2[n, ], mean = mumix2[group[n], ], sd = 1 / sqrt(muprec2[group[n], ]), log = T)
     rst = rst + ninter * mean(p4, na.rm = T)
     for (j in 1:ninter) {
-      p1 = pnorm(0, mean = mu2[n, ], sd = 1)
+      p1 = pnorm(0, mean = mu2[n, ])
       if (response[n, j] == 1) {
         p1 = 1 - p1
       }
@@ -166,10 +166,10 @@ posterior_bi_simu = function (dat, C, iter = 2000) {
                                           muprec = c(1, 1, 1),
                                           mumix2 = c(-0.5, 0.5, 0),
                                           muprec2 = c(1, 1, 1)),
-                             n.adapt = iter), silent = TRUE)
+                             n.adapt = 1000), silent = TRUE)
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu1', 'mu2', 'rho', 'mumix', 'muprec', 'mumix2', 'muprec2'),
-                              n.iter = iter), silent = TRUE)
+                              n.iter = 10000), silent = TRUE)
   return (list(mu1 = matrix(res.bugs$mu1, nrow = dat$N),
                mu2 = matrix(res.bugs$mu2, nrow = dat$N),
                rho = matrix(res.bugs$rho, nrow = dat$N),
@@ -203,8 +203,8 @@ summary_posterior_bi = function (dataVal, mcmcVal) {
     p4 = dnorm(mu2[n, ], mean = mumix2[group[n], ], sd = 1 / sqrt(muprec2[group[n], ]), log = T)
     rst = rst + ninter * (mean(p3, na.rm = T) + mean(p4, na.rm = T))
     p00 = pbivnorm(-mu1[n, ], -mu2[n, ], rho[n, ])
-    p01 = pnorm(0, mu1[n, ]) - p00
-    p10 = pnorm(0, mu2[n, ]) - p00
+    p01 = pnorm(0, mean = mu1[n, ]) - p00
+    p10 = pnorm(0, mean = mu2[n, ]) - p00
     p11 = 1 - p00 - p01 - p10
     for (j in 1:ninter) {
       if (response[n, j] == 0 & activity[n, j] == 0) {
@@ -214,7 +214,7 @@ summary_posterior_bi = function (dataVal, mcmcVal) {
       } else if (response[n, j] == 1 & activity[n, j] == 0) {
         rst = rst + mean(log(p10), na.rm = T)
       } else {
-        rst = rst + mean(log(p01), na.rm = T)
+        rst = rst + mean(log(p11), na.rm = T)
       }
     }
   }

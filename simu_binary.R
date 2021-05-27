@@ -15,7 +15,7 @@ N = 4
 C = 3
 M = 1
 
-epsilon_p = 0.1
+epsilon_p = 0.05
 p0 = c(0.15, 0.4)
 prob1 = c(0.15, 0.15, 0.15, 0.45) ## true p1
 mu1 = qnorm(prob1)
@@ -129,7 +129,7 @@ report
 
 
 
-
+#### Details
 report = cbind(cluster,
                rowMeans(post_cluster_all == 1),
                rowMeans(post_cluster_all == 2),
