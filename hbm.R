@@ -1,15 +1,16 @@
 ## Generate parameters based on posterior distributons
 ## Activity is continuous, stage 1 based on activity
-posterior_simu_s1 = function (dat, C, iter = 2000) {
+posterior_simu_s1 = function (dat, C, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   thismodel = try(jags.model(file = "trial_ct_s1.txt", 
                              data = dat, 
                              inits = list(mu2 = rep(1, dat$N),
                                           mumix2 = c(1, 5),
                                           muprec2 = c(1, 1)),
-                             n.adapt = iter), silent = TRUE)
+                             n.adapt = n.adapt), silent = TRUE)
+  update(thismodel, n.burn)
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu2', 'mumix2', 'muprec2'),
-                              n.iter = iter), silent = TRUE)
+                              n.iter = n.iter), silent = TRUE)
   return (list(mu2 = matrix(res.bugs$mu2, nrow = dat$N),
                mumix2 = matrix(res.bugs$mumix2, nrow = 2),
                muprec2 = matrix(res.bugs$muprec2, nrow = 2)))
@@ -43,7 +44,7 @@ summary_posterior_s1 = function (dataVal, mcmcVal) {
 
 ## Generate parameters based on posterior distributons
 ## Activity is continuous, stage 2
-posterior_simu = function (dat, C, iter = 2000) {
+posterior_simu = function (dat, C, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   thismodel = try(jags.model(file = "trial_ct.txt", 
                              data = dat, 
                              inits = list(mu1 = rep(-0.5, dat$N),
@@ -53,10 +54,11 @@ posterior_simu = function (dat, C, iter = 2000) {
                                           muprec = c(1, 1, 1),
                                           mumix2 = c(1, 5, 1),
                                           muprec2 = c(1, 1, 1)),
-                             n.adapt = iter), silent = TRUE)
+                             n.adapt = n.adapt), silent = TRUE)
+  update(thismodel, n.burn)
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu1', 'mu2', 'rho', 'mumix', 'muprec', 'mumix2', 'muprec2'),
-                              n.iter = iter), silent = TRUE)
+                              n.iter = n.iter), silent = TRUE)
   return (list(mu1 = matrix(res.bugs$mu1, nrow = dat$N),
                mu2 = matrix(res.bugs$mu2, nrow = dat$N),
                rho = matrix(res.bugs$rho, nrow = dat$N),
@@ -109,16 +111,17 @@ summary_posterior = function (dataVal, mcmcVal) {
 
 ## Generate parameters based on posterior distributons
 ## Activity is continuous, stage 1 based on activity
-posterior_bi_simu_s1 = function (dat, C, iter = 2000) {
+posterior_bi_simu_s1 = function (dat, C, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   thismodel = try(jags.model(file = "trial_bi_s1.txt", 
                              data = dat, 
-                             inits = list(mu2 = rep(1, dat$N),
-                                          mumix2 = c(1, 5),
+                             inits = list(mu2 = rep(0, dat$N),
+                                          mumix2 = c(-0.5, 0.5),
                                           muprec2 = c(1, 1)),
-                             n.adapt = 1000), silent = TRUE)
+                             n.adapt = n.adapt), silent = TRUE)
+  update(thismodel, n.burn)
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu2', 'mumix2', 'muprec2'),
-                              n.iter = 10000), silent = TRUE)
+                              n.iter = n.iter), silent = TRUE)
   return (list(mu2 = matrix(res.bugs$mu2, nrow = dat$N),
                mumix2 = matrix(res.bugs$mumix2, nrow = 2),
                muprec2 = matrix(res.bugs$muprec2, nrow = 2)))
@@ -155,21 +158,22 @@ summary_posterior_bi_s1 = function (dataVal, mcmcVal) {
 
 ## Generate parameters based on posterior distributons
 ## Activity is binary
-posterior_bi_simu = function (dat, C, iter = 2000) {
+posterior_bi_simu = function (dat, C, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   thismodel = try(jags.model(file = "trial_bi.txt", 
                              data = dat, 
                              inits = list(Z = array(c(dat$response, dat$activity), dim = c(dat$N, dat$ninter, 2)),
                                           mu1 = rep(-0.5, dat$N),
-                                          mu2 = rep(-0.1, dat$N),
+                                          mu2 = rep(0, dat$N),
                                           rho = rep(0.5, dat$N),
                                           mumix = c(-2, -2, 0),
                                           muprec = c(1, 1, 1),
-                                          mumix2 = c(-0.5, 0.5, 0),
+                                          mumix2 = c(-0.5, 0.5, 0.5),
                                           muprec2 = c(1, 1, 1)),
-                             n.adapt = 1000), silent = TRUE)
+                             n.adapt = n.adapt), silent = TRUE)
+  update(thismodel, n.burn)
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu1', 'mu2', 'rho', 'mumix', 'muprec', 'mumix2', 'muprec2'),
-                              n.iter = 10000), silent = TRUE)
+                              n.iter = n.iter), silent = TRUE)
   return (list(mu1 = matrix(res.bugs$mu1, nrow = dat$N),
                mu2 = matrix(res.bugs$mu2, nrow = dat$N),
                rho = matrix(res.bugs$rho, nrow = dat$N),

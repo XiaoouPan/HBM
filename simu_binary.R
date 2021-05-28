@@ -13,9 +13,9 @@ ninter = 19
 n1 = 10
 N = 4
 C = 3
-M = 1
+M = 50
 
-epsilon_p = 0.05
+epsilon_p = 0.1
 p0 = c(0.15, 0.4)
 prob1 = c(0.15, 0.15, 0.15, 0.45) ## true p1
 mu1 = qnorm(prob1)
@@ -35,7 +35,7 @@ post_cluster_all = matrix(0, N, M)
 #post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(0, N, M)
 
 for (m in 1:M) {
-  set.seed(m)
+  #set.seed(m)
   ## Data generation
   for (i in 1:N) {
     Z[i, , ] = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
