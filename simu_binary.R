@@ -13,9 +13,9 @@ ninter = 19
 n1 = 10
 N = 4
 C = 3
-M = 50
+M = 1
 
-epsilon_p = 0.1
+epsilon_p = c(0.05, 0.1)
 p0 = c(0.15, 0.4)
 prob1 = c(0.15, 0.15, 0.15, 0.45) ## true p1
 mu1 = qnorm(prob1)
