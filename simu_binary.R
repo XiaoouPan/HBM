@@ -22,6 +22,7 @@ mu1 = qnorm(prob1)
 prob2 = c(0.4, 0.4, 0.4, 0.7) ## true p2
 mu2 = qnorm(prob2)
 rho0 = 0.5
+reject_rate = 0.9 ## For hypothesis testing
 cluster = c(1, 1, 1, 3)
 
 response = matrix(0, N, ninter)
@@ -31,6 +32,8 @@ Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 cutoff = qnorm(p0 + epsilon_p)
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
 post_cluster_all = matrix(0, N, M)
+early_stop = matrix(0, N, M)
+reject_prob = reject_acti = matrix(0, N, M)
 #post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(0, N, M)
 #post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(0, N, M)
 
@@ -73,6 +76,7 @@ for (m in 1:M) {
   index = which.max(bayes_cluster)
   if (sum(s1_cluster[index, ] == 1) == 4) {
     post_cluster_all[, m] = c(1, 1, 1, 1)
+    early_stop[, m] = c(1, 1, 1, 1)
     next
   }
   
@@ -80,9 +84,11 @@ for (m in 1:M) {
   bayes_cluster = NULL
   arm_remain = which(s1_cluster[index, ] == 2)
   N_remain = length(arm_remain)
+  early_stop[-arm_remain, m] = rep(1, N - N_remain)
   response_remain = response[arm_remain, , drop = FALSE]
   activity_remain = activity[arm_remain, , drop = FALSE]
   all_cluster = permutations(n = C, r = N_remain, repeats.allowed = T)
+  prob_rec = acti_rec = NULL 
   #prob_rec = prob_upper_rec = prob_lower_rec = NULL 
   #acti_rec = acti_upper_rec = acti_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
@@ -95,12 +101,12 @@ for (m in 1:M) {
                cutoff = cutoff)
     this_posterior = posterior_bi_simu(dat, C)
     
-    #this_prob = pnorm(0, mean = this_posterior$mu1, sd = 1, lower.tail = FALSE)
-    #prob_rec = rbind(prob_rec, rowMeans(this_prob))
+    this_prob = pnorm(0, mean = this_posterior$mu1, sd = 1, lower.tail = FALSE)
+    prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0[1]) > reject_rate))
     #prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 0.975))
     #prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, 0.025))
-    #this_acti = pnorm(0, mean = this_posterior$mu2, sd = 1, lower.tail = FALSE)
-    #acti_rec = rbind(acti_rec, rowMeans(this_acti))
+    this_acti = pnorm(0, mean = this_posterior$mu2, sd = 1, lower.tail = FALSE)
+    acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > p0[2]) > reject_rate))
     #acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 0.975))
     #acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, 0.025))
     
@@ -111,6 +117,8 @@ for (m in 1:M) {
   index = which.max(bayes_cluster)
   post_cluster_all[-arm_remain, m] = rep(1, N - N_remain)
   post_cluster_all[arm_remain, m] = all_cluster[index, ]
+  reject_prob[arm_remain, m] = prob_rec[all_cluster[index, ], ]
+  reject_acti[arm_remain, m] = acti_rec[all_cluster[index, ], ]
 }
 
 
@@ -118,9 +126,12 @@ for (m in 1:M) {
 report = cbind(cluster,
                rowMeans(post_cluster_all == 1),
                rowMeans(post_cluster_all == 2),
-               rowMeans(post_cluster_all == 3))
+               rowMeans(post_cluster_all == 3),
+               rowMeans(early_stop), 
+               rowMeans(reject_prob | reject_acti),
+               rowMeans(reject_prob & reject_acti))
 report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3")
+colnames(report) = c("cluster", "C1", "C2", "C3", "early", "weak", "strong")
 report
 
 
