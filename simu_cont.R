@@ -12,17 +12,17 @@ ninter = 19
 n1 = 10
 N = 4
 C = 3
-M = 20
+M = 1
 
 epsilon_p = 0.05
 epsilon_mu = 0.5
 p0 = 0.15 ## null response rate
 mu0 = 3 ## null activity level
-prob = c(0.15, 0.15, 0.45, 0.45) ## true p
+prob = c(0.15, 0.15, 0.15, 0.15) ## true p
 mu1 = qnorm(prob)
-mu2 = c(3, 3, 5, 5)  ## true mu
+mu2 = c(3, 3, 3, 3)  ## true mu
 rho0 = 0.5
-cluster = c(1, 1, 3, 3) ## true cluster structure
+cluster = c(1, 1, 1, 1) ## true cluster structure
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
@@ -32,6 +32,8 @@ cutoff = qnorm(p0 + epsilon_p)
 cutoff2 = mu0 + epsilon_mu
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
 post_cluster_all = matrix(0, N, M)
+early_stop = matrix(0, N, M)
+reject_prob = reject_acti = matrix(0, N, M)
 #post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(0, N, M)
 #post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(0, N, M)
 
