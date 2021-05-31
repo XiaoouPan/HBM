@@ -124,8 +124,8 @@ for (m in 1:M) {
   index = which.max(bayes_cluster)
   post_cluster_all[-arm_remain, m] = rep(1, N - N_remain)
   post_cluster_all[arm_remain, m] = all_cluster[index, ]
-  reject_prob[arm_remain, m] = prob_rec[all_cluster[index, ], ]
-  reject_acti[arm_remain, m] = acti_rec[all_cluster[index, ], ]
+  reject_prob[arm_remain, m] = prob_rec[index, ]
+  reject_acti[arm_remain, m] = acti_rec[index, ]
   #post_prob_all[, m] = prob_rec[index, ]
   #post_prob_upper_all[, m] = prob_upper_rec[index, ]
   #post_prob_lower_all[, m] = prob_lower_rec[index, ]
