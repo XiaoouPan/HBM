@@ -13,17 +13,17 @@ ninter = 19
 n1 = 10
 N = 4
 C = 3
-M = 1
+M = 50
 
-epsilon_p = c(0.05, 0.1)
-p0 = c(0.15, 0.4)
-prob1 = c(0.15, 0.15, 0.15, 0.45) ## true p1
+epsilon_p = c(0.1, 0.1)
+p0 = c(0.15, 0.15)
+prob1 = c(0.15, 0.15, 0.45, 0.45) ## true p1
 mu1 = qnorm(prob1)
-prob2 = c(0.4, 0.4, 0.4, 0.7) ## true p2
+prob2 = c(0.15, 0.15, 0.45, 0.45) ## true p2
 mu2 = qnorm(prob2)
 rho0 = 0.5
 reject_rate = 0.9 ## For hypothesis testing
-cluster = c(1, 1, 1, 3)
+cluster = c(1, 1, 3, 3)
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
