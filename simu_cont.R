@@ -12,7 +12,7 @@ ninter = 19
 n1 = 10
 N = 4
 C = 3
-M = 10
+M = 50
 
 epsilon_p = 0.05
 epsilon_mu = 0.5
