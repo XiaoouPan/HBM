@@ -6,7 +6,7 @@ library(mvtnorm)
 
 rm(list = ls())
 
-source('hbm.R')
+source('hbm_cont.R')
 
 ninter = 19
 n1 = 10
@@ -15,7 +15,8 @@ C = 3
 M = 10
 
 epsilon_p = 0.05
-epsilon_mu = 0.3
+epsilon_mu = 0.5
+epsilon_1 = 0.2 ## buffer for the first stage
 p0 = 0.15 ## null response rate
 mu0 = 3 ## null activity level
 rho0 = 0.5
