@@ -1,0 +1,8 @@
+# Stage 1 with continuous activity
+
+model { 
+  for (j in 1:ninter) {
+    activity[j] ~ dnorm(mu2, 1)
+  }
+  mu2 ~ dnorm(3, 0.00001)T(, cutoff2)
+}

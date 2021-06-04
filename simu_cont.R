@@ -32,6 +32,7 @@ Z = array(0, c(N, ninter, 2)) ## underlying bivariate normal, one of them is uno
 Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 cutoff = qnorm(p0 + epsilon_p)
 cutoff2 = mu0 + epsilon_mu
+cutoff_int = mu0 + epsilon_1
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
 post_cluster_all = matrix(0, N, M)
 early_stop = matrix(0, N, M)
@@ -57,11 +58,12 @@ for (m in 1:M) {
   #mu_rec = NULL
   for (i in 1:nrow(s1_cluster)) {
     group = s1_cluster[i, ]
+    
     dat = list(activity = activity_s1,
                N = N,
                ninter = n1,
                group = group,
-               cutoff2 = cutoff2)
+               cutoff2 = cutoff_int)
     this_posterior = posterior_simu_s1(dat)
     
     #this_mu = this_posterior$mu2

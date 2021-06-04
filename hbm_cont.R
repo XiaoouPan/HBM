@@ -1,3 +1,113 @@
+#### MCMC Sampling and calculate likelihood for the interim stage
+post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+  rst = 0  ## Bayesian factor for this group
+  
+  ## Cluster 1
+  ind = which(group == 1)
+  N = length(ind)
+  if (N == 1) {
+    dat = list(activity = activity[ind, ],
+               ninter = n1,
+               cutoff2 = cutoff_int)
+    thismodel = try(jags.model(file = "bugs/cont/int_c1_uni.txt", 
+                               data = dat, 
+                               inits = list(mu2 = 3),
+                               n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+    update(thismodel, n.burn, progress.bar = "none") 
+    res.bugs = try(jags.samples(thismodel, 
+                                variable.names = c("mu2"),
+                                n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+    mu2 = matrix(res.bugs$mu2, nrow = 1)
+    for (j in 1:n1) {
+      p1 = dnorm(activity[ind, j], mean = mu2, sd = 1, log = TRUE)
+      rst = rst + mean(p1, na.rm = T)
+    }
+  } else if (N >= 2) {
+    activity_sub = activity[ind, ]
+    dat = list(activity = activity_sub,
+               N = N,
+               ninter = n1,
+               cutoff2 = cutoff_int)
+    thismodel = try(jags.model(file = "bugs/cont/int_c1.txt", 
+                               data = dat, 
+                               inits = list(mu2 = rep(3, N),
+                                            mumix2 = 3,
+                                            muprec2 = 1),
+                               n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+    update(thismodel, n.burn, progress.bar = "none") 
+    res.bugs = try(jags.samples(thismodel, 
+                                variable.names = c('mu2', 'mumix2', 'muprec2'),
+                                n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+    mu2 = matrix(res.bugs$mu2, nrow = N)
+    mumix2 = matrix(res.bugs$mumix2, nrow = 1)
+    muprec2 = matrix(res.bugs$muprec2, nrow = 1)
+    for (n in 1:N) {
+      p4 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2)) / pnorm(cutoff_int, mean = mumix2, sd = 1 / sqrt(muprec2))
+      rst = rst + n1 * mean(log(p4), na.rm = T)
+      for (j in 1:n1) {
+        p1 = dnorm(activity_sub[n, j], mean = mu2[n, ], sd = 1, log = TRUE)
+        rst = rst + mean(p1, na.rm = T)
+      }
+    }
+  }
+  
+  ## Cluster 2
+  ind = which(group == 2)
+  N = length(ind)
+  if (N == 1) {
+    dat = list(activity = activity[ind, ],
+               ninter = n1,
+               cutoff2 = cutoff_int)
+    thismodel = try(jags.model(file = "bugs/cont/int_c2_uni.txt", 
+                               data = dat, 
+                               inits = list(mu2 = 5),
+                               n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+    update(thismodel, n.burn, progress.bar = "none") 
+    res.bugs = try(jags.samples(thismodel, 
+                                variable.names = c("mu2"),
+                                n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+    mu2 = matrix(res.bugs$mu2, nrow = 1)
+    for (j in 1:n1) {
+      p1 = dnorm(activity[ind, j], mean = mu2, sd = 1, log = TRUE)
+      rst = rst + mean(p1, na.rm = T)
+    }
+  } else if (N >= 2) {
+    activity_sub = activity[ind, ]
+    dat = list(activity = activity_sub,
+               N = N,
+               ninter = n1,
+               cutoff2 = cutoff_int)
+    thismodel = try(jags.model(file = "bugs/cont/int_c2.txt", 
+                               data = dat, 
+                               inits = list(mu2 = rep(5, N),
+                                            mumix2 = 5,
+                                            muprec2 = 1),
+                               n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+    update(thismodel, n.burn, progress.bar = "none") 
+    res.bugs = try(jags.samples(thismodel, 
+                                variable.names = c('mu2', 'mumix2', 'muprec2'),
+                                n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+    mu2 = matrix(res.bugs$mu2, nrow = N)
+    mumix2 = matrix(res.bugs$mumix2, nrow = 1)
+    muprec2 = matrix(res.bugs$muprec2, nrow = 1)
+    for (n in 1:N) {
+      p4 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2)) / pnorm(cutoff_int, mean = mumix2, sd = 1 / sqrt(muprec2), lower.tail = FALSE)
+      rst = rst + n1 * mean(log(p4), na.rm = T)
+      for (j in 1:n1) {
+        p1 = dnorm(activity_sub[n, j], mean = mu2[n, ], sd = 1, log = TRUE)
+        rst = rst + mean(p1, na.rm = T)
+      }
+    }
+  }
+  return (rst)
+}
+
+
+
+
+
+
+
 ## Generate parameters based on posterior distributons
 ## Activity is continuous, stage 1 based on activity
 posterior_simu_s1 = function (dat, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
@@ -102,6 +212,5 @@ summary_posterior = function (dataVal, mcmcVal) {
   }
   return (rst)
 }
-
 
 
