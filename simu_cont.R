@@ -76,6 +76,7 @@ for (m in 1:M) {
   if (sum(s1_cluster[index, ] == 1) == 4) {
     post_cluster_all[, m] = c(1, 1, 1, 1)
     early_stop[, m] = c(1, 1, 1, 1)
+    setTxtProgressBar(pb, m / M)
     next
   }
   #post_cluster_all[, m] = all_cluster[index, ]
