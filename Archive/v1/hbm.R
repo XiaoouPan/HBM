@@ -1,13 +1,13 @@
 ## Generate parameters based on posterior distributons
 ## Activity is continuous, stage 1 based on activity
-posterior_simu_s1 = function (dat, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+posterior_simu_s1 = function (dat, C, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   thismodel = try(jags.model(file = "trial_ct_s1.txt", 
                              data = dat, 
                              inits = list(mu2 = rep(1, dat$N),
                                           mumix2 = c(1, 5),
                                           muprec2 = c(1, 1)),
                              n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
-  update(thismodel, n.burn, progress.bar = "none") 
+  update(thismodel, n.burn, progress.bar = "none")
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu2', 'mumix2', 'muprec2'),
                               n.iter = n.iter, progress.bar = "none"), silent = TRUE)
@@ -54,11 +54,11 @@ posterior_simu = function (dat, C, n.adapt = 1000, n.burn = 1000, n.iter = 5000)
                                           muprec = c(1, 1, 1),
                                           mumix2 = c(1, 5, 1),
                                           muprec2 = c(1, 1, 1)),
-                             n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
-  update(thismodel, n.burn, progress.bar = "none")
+                             n.adapt = n.adapt), silent = TRUE)
+  update(thismodel, n.burn)
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu1', 'mu2', 'rho', 'mumix', 'muprec', 'mumix2', 'muprec2'),
-                              n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+                              n.iter = n.iter), silent = TRUE)
   return (list(mu1 = matrix(res.bugs$mu1, nrow = dat$N),
                mu2 = matrix(res.bugs$mu2, nrow = dat$N),
                rho = matrix(res.bugs$rho, nrow = dat$N),
@@ -111,17 +111,17 @@ summary_posterior = function (dataVal, mcmcVal) {
 
 ## Generate parameters based on posterior distributons
 ## Activity is continuous, stage 1 based on activity
-posterior_bi_simu_s1 = function (dat, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+posterior_bi_simu_s1 = function (dat, C, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   thismodel = try(jags.model(file = "trial_bi_s1.txt", 
                              data = dat, 
                              inits = list(mu2 = rep(0, dat$N),
                                           mumix2 = c(-0.5, 0.5),
                                           muprec2 = c(1, 1)),
-                             n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
-  update(thismodel, n.burn, progress.bar = "none")
+                             n.adapt = n.adapt), silent = TRUE)
+  update(thismodel, n.burn)
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu2', 'mumix2', 'muprec2'),
-                              n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+                              n.iter = n.iter), silent = TRUE)
   return (list(mu2 = matrix(res.bugs$mu2, nrow = dat$N),
                mumix2 = matrix(res.bugs$mumix2, nrow = 2),
                muprec2 = matrix(res.bugs$muprec2, nrow = 2)))
@@ -169,11 +169,11 @@ posterior_bi_simu = function (dat, C, n.adapt = 1000, n.burn = 1000, n.iter = 50
                                           muprec = c(1, 1, 1),
                                           mumix2 = c(-0.5, 0.5, 0.5),
                                           muprec2 = c(1, 1, 1)),
-                             n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
-  update(thismodel, n.burn, progress.bar = "none")
+                             n.adapt = n.adapt), silent = TRUE)
+  update(thismodel, n.burn)
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c('mu1', 'mu2', 'rho', 'mumix', 'muprec', 'mumix2', 'muprec2'),
-                              n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+                              n.iter = n.iter), silent = TRUE)
   return (list(mu1 = matrix(res.bugs$mu1, nrow = dat$N),
                mu2 = matrix(res.bugs$mu2, nrow = dat$N),
                rho = matrix(res.bugs$rho, nrow = dat$N),

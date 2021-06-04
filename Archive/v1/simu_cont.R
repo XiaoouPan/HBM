@@ -12,18 +12,18 @@ ninter = 19
 n1 = 10
 N = 4
 C = 3
-M = 10
+M = 50
 
 epsilon_p = 0.05
-epsilon_mu = 0.3
+epsilon_mu = 0.5
 p0 = 0.15 ## null response rate
 mu0 = 3 ## null activity level
 rho0 = 0.5
 reject_rate = 0.9 ## For hypothesis testing
-prob = c(0.15, 0.15, 0.15, 0.15) ## true p
+prob = c(0.15, 0.15, 0.15, 0.45) ## true p
 mu1 = qnorm(prob)
-mu2 = c(3, 3, 3, 3)  ## true mu
-cluster = c(1, 1, 1, 1) ## true cluster structure
+mu2 = c(3, 3, 3, 5)  ## true mu
+cluster = c(1, 1, 1, 3) ## true cluster structure
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
@@ -38,7 +38,7 @@ reject_prob = reject_acti = matrix(0, N, M)
 #post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(0, N, M)
 #post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(0, N, M)
 
-pb = txtProgressBar(style = 3)
+
 for (m in 1:M) {
   #set.seed(m)
   ## Data generation
@@ -61,7 +61,7 @@ for (m in 1:M) {
                ninter = n1,
                group = group,
                cutoff2 = cutoff2)
-    this_posterior = posterior_simu_s1(dat)
+    this_posterior = posterior_simu_s1(dat, C)
     
     #this_mu = this_posterior$mu2
     #mu_rec = rbind(mu_rec, rowMeans(this_mu))
@@ -132,8 +132,6 @@ for (m in 1:M) {
   #post_acti_all[, m] = acti_rec[index, ]
   #post_acti_upper_all[, m] = acti_upper_rec[index, ]
   #post_acti_lower_all[, m] = acti_lower_rec[index, ]
-  
-  setTxtProgressBar(pb, m / M)
 }
 
 

@@ -58,7 +58,7 @@ for (m in 1:M) {
                ninter = n1,
                group = group,
                cutoff = cutoff[2])
-    this_posterior = posterior_bi_simu_s1(dat, C)
+    this_posterior = posterior_bi_simu_s1(dat)
     
     #this_prob = pnorm(0, mean = this_posterior$mu1, sd = 1, lower.tail = FALSE)
     #prob_rec = rbind(prob_rec, rowMeans(this_prob))

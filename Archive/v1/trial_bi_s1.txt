@@ -1,0 +1,17 @@
+# 3 outcomes clustering groups with binary activity
+
+
+model { 
+  for (i in 1:N) {
+    for (j in 1:ninter) {
+      activity[i, j] ~ dbern(1 - prob[i, j])
+      prob[i, j] <- pnorm(0, mu2[i], 1)
+    }
+    mu2[i] ~ dnorm(mumix2[group[i]], muprec2[group[i]])
+  }
+
+  mumix2[1] ~ dnorm(-0.5, 0.00001)T(,cutoff);
+  muprec2[1] ~ dgamma(0.001, 0.001);
+  mumix2[2] ~ dnorm(0.5, 0.00001)T(cutoff,);
+  muprec2[2] ~ dgamma(0.001, 0.001);
+}
