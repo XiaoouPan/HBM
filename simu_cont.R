@@ -14,7 +14,7 @@ N = 4
 C = 3
 M = 1
 
-epsilon_p = 0.05
+epsilon_p = 0.2
 epsilon_mu = 0.5
 epsilon_1 = 0.5 ## buffer for the first stage
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
@@ -23,17 +23,17 @@ rho0 = 0.5
 reject_rate = 0.9 ## For hypothesis testing
 prob = c(0.15, 0.15, 0.15, 0.15) ## true p
 acti = c(3, 3, 3, 3)  ## true activity
-mu1 = qnorm(prob - p0)
+mu1 = qnorm(prob) - qnorm(p0)
 mu2 = acti - mu0
 cluster = c(1, 1, 1, 1) ## true cluster structure
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
-Z = array(0, c(N, ninter, 2)) ## underlying bivariate normal, one of them is unobservable
+Z = matrix(0, ninter, 2) ## underlying bivariate normal, one of them is unobservable
 Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
-cutoff = qnorm(p0 + epsilon_p)
-cutoff2 = mu0 + epsilon_mu
-cutoff_int = mu0 + epsilon_1
+cutoff = epsilon_p
+cutoff2 = epsilon_mu
+cutoff_int = epsilon_1
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
 post_cluster_all = matrix(0, N, M)
 early_stop = matrix(0, N, M)
