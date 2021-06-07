@@ -12,18 +12,19 @@ ninter = 19
 n1 = 10
 N = 4
 C = 3
-M = 10
+M = 1
 
 epsilon_p = 0.05
 epsilon_mu = 0.5
-epsilon_1 = 0.2 ## buffer for the first stage
-p0 = 0.15 ## null response rate
-mu0 = 3 ## null activity level
+epsilon_1 = 0.5 ## buffer for the first stage
+p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
+mu0 = c(3, 3, 3, 3) ## null activity level
 rho0 = 0.5
 reject_rate = 0.9 ## For hypothesis testing
 prob = c(0.15, 0.15, 0.15, 0.15) ## true p
-mu1 = qnorm(prob)
-mu2 = c(3, 3, 3, 3)  ## true mu
+acti = c(3, 3, 3, 3)  ## true activity
+mu1 = qnorm(prob - p0)
+mu2 = acti - mu0
 cluster = c(1, 1, 1, 1) ## true cluster structure
 
 response = matrix(0, N, ninter)
@@ -58,21 +59,7 @@ for (m in 1:M) {
   #mu_rec = NULL
   for (i in 1:nrow(s1_cluster)) {
     group = s1_cluster[i, ]
-    
-    dat = list(activity = activity_s1,
-               N = N,
-               ninter = n1,
-               group = group,
-               cutoff2 = cutoff_int)
-    this_posterior = posterior_simu_s1(dat)
-    
-    #this_mu = this_posterior$mu2
-    #mu_rec = rbind(mu_rec, rowMeans(this_mu))
-    #mu_upper_rec = rbind(mu_upper_rec, apply(this_mu, 1, quantile, 0.975))
-    #mu_lower_rec = rbind(mu_lower_rec, apply(this_mu, 1, quantile, 0.025))
-    
-    # Calculate the Bayes Factors for the interim analysis cluster permutations
-    res = summary_posterior_s1(dat, this_posterior)
+    res = post_s1(activity_s1, n1, group, cutoff_int)
     bayes_cluster = c(bayes_cluster, res)# this the result vector of BF after iterating thru every permutation
   }
   index = which.max(bayes_cluster)
@@ -82,13 +69,6 @@ for (m in 1:M) {
     setTxtProgressBar(pb, m / M)
     next
   }
-  #post_cluster_all[, m] = all_cluster[index, ]
-  #post_prob_all[, m] = prob_rec[index, ]
-  #post_prob_upper_all[, m] = prob_upper_rec[index, ]
-  #post_prob_lower_all[, m] = prob_lower_rec[index, ]
-  #post_acti_all[, m] = mu_rec[index, ]
-  #post_acti_upper_all[, m] = mu_upper_rec[index, ]
-  #post_acti_lower_all[, m] = mu_lower_rec[index, ]
   
   ## stage 2 with both response and activity
   bayes_cluster = NULL
@@ -98,9 +78,8 @@ for (m in 1:M) {
   response_remain = response[arm_remain, , drop = FALSE]
   activity_remain = activity[arm_remain, , drop = FALSE]
   all_cluster = permutations(n = C, r = N_remain, repeats.allowed = T)
-  prob_rec = acti_rec = NULL 
-  #prob_rec = prob_upper_rec = prob_lower_rec = NULL 
-  #acti_rec = acti_upper_rec = acti_lower_rec = NULL 
+  prob_rec = prob_upper_rec = prob_lower_rec = NULL 
+  acti_rec = acti_upper_rec = acti_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
     group = all_cluster[i, ]
     dat = list(response = response_remain,
