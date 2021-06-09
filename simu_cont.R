@@ -14,7 +14,7 @@ N = 4
 C = 3
 M = 1
 
-epsilon_p = 0.2
+epsilon_p = 0.05
 epsilon_mu = 0.5
 epsilon_1 = 0.5 ## buffer for the first stage
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
@@ -31,7 +31,7 @@ response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
 Z = matrix(0, ninter, 2) ## underlying bivariate normal, one of them is unobservable
 Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
-cutoff = epsilon_p
+cutoff = qnorm(p0[1] + epsilon_p) - qnorm(p0[1])
 cutoff2 = epsilon_mu
 cutoff_int = epsilon_1
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
@@ -46,9 +46,9 @@ for (m in 1:M) {
   #set.seed(m)
   ## Data generation
   for (i in 1:N) {
-    Z[i, , ] = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
-    response[i, ] = as.numeric(Z[i, , 1] > 0)
-    activity[i, ] = Z[i, , 2]
+    Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
+    response[i, ] = as.numeric(Z[, 1] > 0)
+    activity[i, ] = Z[, 2]
   }
   
   ## stage 1 with only sctivity
