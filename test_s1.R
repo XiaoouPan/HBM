@@ -19,13 +19,13 @@ n.iter = 5000
 
 epsilon_p = 0.05
 epsilon_mu = 0.5
-epsilon_1 = 0.5 ## buffer for the first stage
+epsilon_1 = 0.2 ## buffer for the first stage
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 mu0 = c(3, 3, 3, 3) ## null activity level
 rho0 = 0.5
 reject_rate = 0.9 ## For hypothesis testing
-prob = c(0.45, 0.45, 0.45, 0.45) ## true p
-acti = c(5, 5, 5, 5)  ## true activity
+prob = c(0.15, 0.15, 0.15, 0.15) ## true p
+acti = c(3, 3, 3, 3)  ## true activity
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = acti - mu0
 cluster = c(1, 1, 1, 1) ## true cluster structure

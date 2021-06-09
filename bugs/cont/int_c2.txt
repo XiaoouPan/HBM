@@ -8,6 +8,6 @@ model {
     mu2[i] ~ dnorm(mumix2, muprec2)T(cutoff2,)
   }
   prec ~ dgamma(0.001, 0.001)
-  mumix2 ~ dnorm(2, 0.00001)T(cutoff2,)
+  mumix2 ~ dnorm(1, 0.00001)T(cutoff2,)
   muprec2 ~ dgamma(0.001, 0.001)
 }
