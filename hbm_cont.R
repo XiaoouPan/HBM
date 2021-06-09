@@ -71,17 +71,20 @@ post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 100
                cutoff2 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c2_uni.txt", 
                                data = dat, 
-                               inits = list(mu2 = 5),
+                               inits = list(mu2 = 2,
+                                            prec = 1),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
     update(thismodel, n.burn, progress.bar = "none") 
     res.bugs = try(jags.samples(thismodel, 
-                                variable.names = c("mu2"),
+                                variable.names = c("mu2", "prec"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu2 = matrix(res.bugs$mu2, nrow = 1)
-    p2 = dnorm(mu2, mean = 5, sd = 1 / sqrt(0.00001))
-    rst = rst + mean(log(p2), na.rm = T)
+    prec = matrix(res.bugs$prec, nrow = 1)
+    p2 = dnorm(mu2, mean = 2, sd = 1 / sqrt(0.00001), log = TRUE)
+    p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    rst = rst + mean(p2, na.rm = T) + mean(p3, na.rm = T)
     for (j in 1:n1) {
-      p1 = dnorm(activity[ind, j], mean = mu2, sd = 1, log = TRUE)
+      p1 = dnorm(activity[ind, j], mean = mu2, sd = 1 / sqrt(prec), log = TRUE)
       rst = rst + mean(p1, na.rm = T)
     }
   } else if (N >= 2) {
@@ -93,24 +96,27 @@ post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 100
     thismodel = try(jags.model(file = "bugs/cont/int_c2.txt", 
                                data = dat, 
                                inits = list(mu2 = rep(5, N),
-                                            mumix2 = 5,
+                                            prec = 1,
+                                            mumix2 = 2,
                                             muprec2 = 1),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
     update(thismodel, n.burn, progress.bar = "none") 
     res.bugs = try(jags.samples(thismodel, 
-                                variable.names = c('mu2', 'mumix2', 'muprec2'),
+                                variable.names = c("mu2", "prec", "mumix2", "muprec2"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu2 = matrix(res.bugs$mu2, nrow = N)
+    prec = matrix(res.bugs$prec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
-    p3 = dnorm(mumix2, mean = 5, sd = 1 / sqrt(0.00001))
+    p3 = dnorm(mumix2, mean = 2, sd = 1 / sqrt(0.00001), log = TRUE)
     p4 = dgamma(muprec2, shape = 0.001, rate = 0.001, log = TRUE)
-    rst = rst + mean(log(p3), na.rm = T) + mean(p4, na.rm = T)
+    p5 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    rst = rst + mean(p3, na.rm = T) + mean(p4, na.rm = T) + mean(p5, na.rm = T)
     for (n in 1:N) {
-      p4 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2))
-      rst = rst + mean(log(p4), na.rm = T)
+      p2 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE)
+      rst = rst + mean(p2, na.rm = T)
       for (j in 1:n1) {
-        p1 = dnorm(activity_sub[n, j], mean = mu2[n, ], sd = 1, log = TRUE)
+        p1 = dnorm(activity_sub[n, j], mean = mu2[n, ], sd = 1 / sqrt(prec), log = TRUE)
         rst = rst + mean(p1, na.rm = T)
       }
     }
