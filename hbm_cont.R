@@ -20,9 +20,9 @@ post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 100
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu2 = matrix(res.bugs$mu2, nrow = 1)
     prec = matrix(res.bugs$prec, nrow = 1)
-    p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
-    p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
-    rst = rst + mean(p2, na.rm = T) + mean(p3, na.rm = T)
+    #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
+    #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    #rst = rst + n1 * (mean(p2, na.rm = T) + mean(p3, na.rm = T))
     for (j in 1:n1) {
       p1 = dnorm(activity[ind, j], mean = mu2, sd = 1 / sqrt(prec), log = TRUE)
       rst = rst + mean(p1, na.rm = T)
@@ -48,10 +48,10 @@ post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 100
     prec = matrix(res.bugs$prec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
-    p3 = dnorm(mumix2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
-    p4 = dgamma(muprec2, shape = 0.001, rate = 0.001, log = TRUE)
-    p5 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
-    rst = rst + mean(p3, na.rm = T) + mean(p4, na.rm = T) + mean(p5, na.rm = T)
+    #p3 = dnorm(mumix2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
+    #p4 = dgamma(muprec2, shape = 0.001, rate = 0.001, log = TRUE)
+    #p5 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    #rst = rst + N * n1 * (mean(p3, na.rm = T) + mean(p4, na.rm = T) + mean(p5, na.rm = T))
     for (n in 1:N) {
       p2 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE)
       rst = rst + mean(p2, na.rm = T)
@@ -80,9 +80,9 @@ post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 100
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu2 = matrix(res.bugs$mu2, nrow = 1)
     prec = matrix(res.bugs$prec, nrow = 1)
-    p2 = dnorm(mu2, mean = 2, sd = 1 / sqrt(0.00001), log = TRUE)
-    p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
-    rst = rst + mean(p2, na.rm = T) + mean(p3, na.rm = T)
+    #p2 = dnorm(mu2, mean = 2, sd = 1 / sqrt(0.00001), log = TRUE)
+    #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    #rst = rst + n1 * (mean(p2, na.rm = T) + mean(p3, na.rm = T))
     for (j in 1:n1) {
       p1 = dnorm(activity[ind, j], mean = mu2, sd = 1 / sqrt(prec), log = TRUE)
       rst = rst + mean(p1, na.rm = T)
@@ -95,7 +95,7 @@ post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 100
                cutoff2 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c2.txt", 
                                data = dat, 
-                               inits = list(mu2 = rep(5, N),
+                               inits = list(mu2 = rep(2, N),
                                             prec = 1,
                                             mumix2 = 2,
                                             muprec2 = 1),
@@ -108,10 +108,10 @@ post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 100
     prec = matrix(res.bugs$prec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
-    p3 = dnorm(mumix2, mean = 2, sd = 1 / sqrt(0.00001), log = TRUE)
-    p4 = dgamma(muprec2, shape = 0.001, rate = 0.001, log = TRUE)
-    p5 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
-    rst = rst + mean(p3, na.rm = T) + mean(p4, na.rm = T) + mean(p5, na.rm = T)
+    #p3 = dnorm(mumix2, mean = 2, sd = 1 / sqrt(0.00001), log = TRUE)
+    #p4 = dgamma(muprec2, shape = 0.001, rate = 0.001, log = TRUE)
+    #p5 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    #rst = rst + N * n1 * (mean(p3, na.rm = T) + mean(p4, na.rm = T) + mean(p5, na.rm = T))
     for (n in 1:N) {
       p2 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE)
       rst = rst + mean(p2, na.rm = T)
