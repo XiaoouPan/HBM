@@ -13,6 +13,9 @@ n1 = 10
 N = 4
 C = 3
 M = 1
+n.adapt = 1000
+n.burn = 1000
+n.iter = 5000
 
 epsilon_p = 0.05
 epsilon_mu = 0.5
