@@ -8,8 +8,8 @@ rm(list = ls())
 
 source('hbm_cont.R')
 
-ninter = 19
-n1 = 10
+ninter = 22
+n1 = 11
 N = 4
 C = 3
 M = 20
@@ -24,8 +24,8 @@ p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 mu0 = c(3, 3, 3, 3) ## null activity level
 rho0 = 0.5
 reject_rate = 0.9 ## For hypothesis testing
-prob = c(0.15, 0.15, 0.15, 0.15) ## true p
-acti = c(3, 3, 3, 3)  ## true activity
+prob = c(0.15, 0.15, 0.45, 0.45) ## true p
+acti = c(3, 3, 4, 4)  ## true activity
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = acti - mu0
 cluster = c(1, 1, 1, 1) ## true cluster structure
@@ -72,34 +72,5 @@ for (m in 1:M) {
 
 index
 
-## Cluster report
-report = cbind(cluster,
-               rowMeans(post_cluster_all == 1),
-               rowMeans(post_cluster_all == 2),
-               rowMeans(post_cluster_all == 3),
-               rowMeans(early_stop), 
-               rowMeans(reject_prob | reject_acti),
-               rowMeans(reject_prob & reject_acti))
-report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3", "early", "weak", "strong")
-report
-
-
-
-
-### Details of estimates
-report = cbind(cluster,
-               rowMeans(post_cluster_all == 1),
-               rowMeans(post_cluster_all == 2),
-               rowMeans(post_cluster_all == 3),
-               prob,
-               rowMeans(post_prob_all),
-               rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob),
-               mu2,
-               rowMeans(post_acti_all),
-               rowMeans(post_acti_lower_all < mu2 & post_acti_upper_all > mu2))
-report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3", "true_p", "p_hat", "p_CI", "true_mu", "mu_hat", "mu_CI")
-report
 
 
