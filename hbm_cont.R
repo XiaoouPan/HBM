@@ -128,6 +128,7 @@ post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 100
 #### MCMC Sampling and calculate likelihood for the final stage
 post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
+  mu1_rec = mu2_rec = matrix(0, length(group), n.iter)
   
   ## Cluster 1
   ind = which(group == 1)
@@ -153,6 +154,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     mu2 = matrix(res.bugs$mu2, nrow = 1)
     rho = matrix(res.bugs$rho, nrow = 1)
     prec = matrix(res.bugs$prec, nrow = 1)
+    mu1_rec[ind, ] = mu1
+    mu2_rec[ind, ] = mu2
     #p3 = dnorm(mu1, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dnorm(mu2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
     #rst = rst + mean(log(p3), na.rm = T) + mean(log(p4), na.rm = T)
@@ -196,6 +199,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     muprec = matrix(res.bugs$muprec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
+    mu1_rec[ind, ] = mu1
+    mu2_rec[ind, ] = mu2
     #p3 = dnorm(mumix, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dgamma(muprec, shape = 0.001, rate = 0.001, log = TRUE)
     #p5 = dnorm(mumix2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
@@ -240,6 +245,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     mu2 = matrix(res.bugs$mu2, nrow = 1)
     rho = matrix(res.bugs$rho, nrow = 1)
     prec = matrix(res.bugs$prec, nrow = 1)
+    mu1_rec[ind, ] = mu1
+    mu2_rec[ind, ] = mu2
     #p3 = dnorm(mu1, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dnorm(mu2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
     #rst = rst + mean(log(p3), na.rm = T) + mean(log(p4), na.rm = T)
@@ -283,6 +290,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     muprec = matrix(res.bugs$muprec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
+    mu1_rec[ind, ] = mu1
+    mu2_rec[ind, ] = mu2
     #p3 = dnorm(mumix, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dgamma(muprec, shape = 0.001, rate = 0.001, log = TRUE)
     #p5 = dnorm(mumix2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
@@ -310,8 +319,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     dat = list(response = response[ind, ],
                activity = activity[ind, ],
                ninter = ninter,
-               cutoff = cutoff,
-               cutoff2 = cutoff2)
+               cutoff = cutoff)
     thismodel = try(jags.model(file = "bugs/cont/c3_uni.txt", 
                                data = dat, 
                                inits = list(rho = 0.5,
@@ -327,6 +335,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     mu2 = matrix(res.bugs$mu2, nrow = 1)
     rho = matrix(res.bugs$rho, nrow = 1)
     prec = matrix(res.bugs$prec, nrow = 1)
+    mu1_rec[ind, ] = mu1
+    mu2_rec[ind, ] = mu2
     #p3 = dnorm(mu1, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dnorm(mu2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
     #rst = rst + mean(log(p3), na.rm = T) + mean(log(p4), na.rm = T)
@@ -345,8 +355,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                activity = activity[ind, ],
                N = N,
                ninter = ninter,
-               cutoff = cutoff,
-               cutoff2 = cutoff2)
+               cutoff = cutoff)
     thismodel = try(jags.model(file = "bugs/cont/c3.txt", 
                                data = dat, 
                                inits = list(mu1 = rep(1, N),
@@ -370,6 +379,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     muprec = matrix(res.bugs$muprec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
+    mu1_rec[ind, ] = mu1
+    mu2_rec[ind, ] = mu2
     #p3 = dnorm(mumix, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dgamma(muprec, shape = 0.001, rate = 0.001, log = TRUE)
     #p5 = dnorm(mumix2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
@@ -389,7 +400,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
       }
     }
   }
-  return (rst)
+  return (list("factor" = rst, "mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec))
 }
 
 
