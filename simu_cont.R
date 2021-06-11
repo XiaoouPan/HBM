@@ -19,7 +19,8 @@ n.iter = 5000
 
 epsilon_p = 0.1
 epsilon_mu = 0.5
-epsilon_1 = 0.2 ## buffer for the first stage
+epsilon_1 = 0.05
+epsilon_2 = 0.2 ## buffer for the first stage
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 mu0 = c(3, 3, 3, 3) ## null activity level
 rho0 = 0.5
@@ -37,7 +38,8 @@ Z = matrix(0, ninter, 2) ## underlying bivariate normal, one of them is unobserv
 Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 cutoff = qnorm(p0[1] + epsilon_p) - qnorm(p0[1])
 cutoff2 = epsilon_mu
-cutoff_int = epsilon_1
+cutoff_int1 = qnorm(p0[1] + epsilon_1) - qnorm(p0[1])
+cutoff_int2 = epsilon_2
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
 post_cluster_all = matrix(0, N, M)
 early_stop = matrix(0, N, M)
