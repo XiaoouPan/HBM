@@ -1,5 +1,27 @@
-#### MCMC Sampling and likelihood for the interim stage
-post_s1 = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+#### Estimate the correlation as our first step
+cor_est = function(response, activity, N, ninter, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+  dat = list(response = response,
+             activity = activity,
+             N = N,
+             ninter = ninter)
+  thismodel = try(jags.model(file = "bugs/cont/cor.txt", 
+                             data = dat, 
+                             inits = list(mu1 = rep(0, N),
+                                          mu2 = rep(0, N),
+                                          prec = 1,
+                                          rho = 0.5),
+                             n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+  update(thismodel, n.burn, progress.bar = "none") 
+  res.bugs = try(jags.samples(thismodel, 
+                              variable.names = c("mu1", "mu2", "prec", "rho"),
+                              n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+  return (as.vector(res.bugs$rho))
+}
+
+
+
+#### MCMC Sampling and likelihood for the interim stage, using activity
+post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
   
   ## Cluster 1

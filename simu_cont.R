@@ -17,9 +17,9 @@ n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
 
-epsilon_p = 0.05
+epsilon_p = 0.1
 epsilon_mu = 0.5
-epsilon_1 = 0.3 ## buffer for the first stage
+epsilon_1 = 0.2 ## buffer for the first stage
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 mu0 = c(3, 3, 3, 3) ## null activity level
 rho0 = 0.5
@@ -29,7 +29,7 @@ prob = c(0.15, 0.15, 0.15, 0.45) ## true p
 acti = c(3, 3, 3, 4)  ## true activity
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = acti - mu0
-cluster = c(1, 1, 1, 3) ## true cluster structure
+cluster = c(1, 1, 1, 1) ## true cluster structure
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
@@ -41,7 +41,7 @@ cutoff_int = epsilon_1
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
 post_cluster_all = matrix(0, N, M)
 early_stop = matrix(0, N, M)
-reject_prob = reject_acti = matrix(NA, N, M)
+reject_prob = reject_acti = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
 
@@ -55,12 +55,15 @@ for (m in 1:M) {
     activity[i, ] = Z[, 2]
   }
   
+  ## Estimate correlation as preliminary analysis
+  cor_est = mean(cor_est(response, activity, N, ninter, n.adapt, n.burn, n.iter))
+  
   ## stage 1 with only sctivity
   activity_s1 = activity[, 1:n1]
   bayes_cluster = NULL
   for (i in 1:nrow(s1_cluster)) {
     group = s1_cluster[i, ]
-    res = post_s1(activity_s1, n1, group, cutoff_int, n.adapt, n.burn, n.iter)
+    res = post_s1_acti(activity_s1, n1, group, cutoff_int, n.adapt, n.burn, n.iter)
     bayes_cluster = c(bayes_cluster, res)# this the result vector of BF after iterating thru every permutation
   }
   index = which.max(bayes_cluster)
