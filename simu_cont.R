@@ -65,7 +65,7 @@ for (m in 1:M) {
   bayes_cluster = NULL
   for (i in 1:nrow(s1_cluster)) {
     group = s1_cluster[i, ]
-    res = post_s1_acti(activity_s1, n1, group, cutoff_int, n.adapt, n.burn, n.iter)
+    res = post_s1_acti(activity_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
     bayes_cluster = c(bayes_cluster, res)# this the result vector of BF after iterating thru every permutation
   }
   index = which.max(bayes_cluster)
