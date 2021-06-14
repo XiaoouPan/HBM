@@ -3,6 +3,7 @@ library(coda)
 library(rjags) 
 library(gtools)
 library(mvtnorm)
+library(tikzDevice)
 
 rm(list = ls())
 
@@ -40,7 +41,7 @@ post_cluster_all = matrix(0, N, M)
 
 
 ######## activity
-epsilon_seq = seq(0, 0.9, by = 0.05)
+epsilon_seq = seq(0, 1, by = 0.05)
 l = length(epsilon_seq)
 early1 = early2 = matrix(0, N, l)
 pb = txtProgressBar(style = 3)
@@ -128,9 +129,47 @@ for (j in 1:l) {
 early1
 early2
 
+
 early1 = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/early1_acti.csv")[, -1])
 early2 = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/early2_acti.csv")[, -1])
 
+setwd("~/Dropbox/Mayo-intern/Simulation")
+tikz("plot.tex", standAlone = TRUE, width = 6, height = 5)
+plot(epsilon_seq, early1[1, ], type = "b", pch = 20, lwd = 5, cex = 1, axes = FALSE, ylim = c(0.45, 1), xlab = "", ylab = "")
+lines(epsilon_seq, early1[2, ], type = "b", pch = 0, lwd = 5, cex = 1, col = "darkorange")
+lines(epsilon_seq, early1[3, ], type = "b", pch = 4, lwd = 5, cex = 1, col = "forestgreen")
+lines(epsilon_seq, early1[4, ], type = "b", pch = 5, lwd = 5, cex = 1, col = "blue")
+color = c("black", "darkorange", "forestgreen", "blue")
+labels = c("\\texttt{arm 1}", "\\texttt{arm 2}", "\\texttt{arm 3}", "\\texttt{arm 4}")
+pch = c(20, 0, 4, 5)
+legend("bottomright", labels, col = color, pch = pch, lwd = 5, cex = 1.7, box.lwd = 1, bg = "white")
+axis(1, epsilon_seq[c(1, 6, 11, 16, 21)], line = 0, cex.axis = 1.5)
+axis(2, c(0.5, 0.65, 0.8, 0.95), line = 0, cex.axis = 1.5)
+box()
+abline(h = c(0.5, 0.65, 0.8, 0.95), v = epsilon_seq[c(1, 6, 11, 16, 21)], col = "gray", lty = 2)
+title(xlab = "Buffer $\\epsilon$", line = 3, cex.lab = 2)
+title(ylab = "Early stopping rate", line = 2.2, cex.lab = 1.6)
+dev.off()
+tools::texi2dvi("plot.tex", pdf = T)
+
+
+tikz("plot.tex", standAlone = TRUE, width = 6, height = 5)
+plot(epsilon_seq, 1 - early2[1, ], type = "b", pch = 20, lwd = 5, cex = 1, axes = FALSE, ylim = c(0.45, 1), xlab = "", ylab = "")
+lines(epsilon_seq, 1 - early2[2, ], type = "b", pch = 0, lwd = 5, cex = 1, col = "darkorange")
+lines(epsilon_seq, 1 - early2[3, ], type = "b", pch = 4, lwd = 5, cex = 1, col = "forestgreen")
+lines(epsilon_seq, 1 - early2[4, ], type = "b", pch = 5, lwd = 5, cex = 1, col = "blue")
+color = c("black", "darkorange", "forestgreen", "blue")
+labels = c("\\texttt{arm 1}", "\\texttt{arm 2}", "\\texttt{arm 3}", "\\texttt{arm 4}")
+pch = c(20, 0, 4, 5)
+legend("bottomright", labels, col = color, pch = pch, lwd = 5, cex = 1.7, box.lwd = 1, bg = "white")
+axis(1, epsilon_seq[c(1, 6, 11, 16, 21)], line = 0, cex.axis = 1.5)
+axis(2, c(0.5, 0.65, 0.7, 0.85, 1), line = 0, cex.axis = 1.5)
+box()
+abline(h = c(0.5, 0.65, 0.7, 0.85, 1), v = epsilon_seq[c(1, 6, 11, 16, 21)], col = "gray", lty = 2)
+title(xlab = "Buffer $\\epsilon$", line = 3, cex.lab = 2)
+title(ylab = "Early stopping rate", line = 2.2, cex.lab = 1.6)
+dev.off()
+tools::texi2dvi("plot.tex", pdf = T)
 
 
 
