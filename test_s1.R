@@ -128,5 +128,9 @@ for (j in 1:l) {
 early1
 early2
 
+early1 = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/early1_acti.csv")[, -1])
+early2 = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/early2_acti.csv")[, -1])
+
+
 
 
