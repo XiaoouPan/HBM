@@ -12,7 +12,7 @@ ninter = 22
 n1 = 11
 N = 4
 C = 3
-M = 50
+M = 5
 n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
@@ -77,6 +77,52 @@ for (j in 1:l) {
   }
   early1[, j] = rowMeans(post_cluster_all == 1)
   early2[, j] = rowMeans(reject_acti)
+}
+
+early1
+early2
+
+
+
+
+######## response
+epsilon_seq = seq(0, 0.3, by = 0.02)
+l = length(epsilon_seq)
+early1 = early2 = matrix(0, N, l)
+pb = txtProgressBar(style = 3)
+for (j in 1:l) {
+  epsilon_1 = epsilon_seq[j]
+  cutoff_int1 = qnorm(p0[1] + epsilon_1) - qnorm(p0[1])
+  #cutoff_int2 = epsilon_2
+  for (m in 1:M) {
+    #set.seed(m)
+    ## Data generation
+    for (i in 1:N) {
+      Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
+      response[i, ] = as.numeric(Z[, 1] > 0)
+      activity[i, ] = Z[, 2]
+    }
+    
+    response_s1 = response[, 1:n1]
+    bayes_cluster = NULL
+    #prob_rec = prob_upper_rec = prob_lower_rec = NULL 
+    #mu_rec = mu_upper_rec = mu_lower_rec = NULL 
+    prob_rec = NULL
+    for (i in 1:nrow(s1_cluster)) {
+      group = s1_cluster[i, ]
+      res = post_s1_resp(response_s1, n1, group, cutoff_int1)
+      bayes_cluster = c(bayes_cluster, res$factor)
+      this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
+      prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
+    }
+    index = which.max(bayes_cluster)
+    post_cluster_all[, m] = s1_cluster[index, ]
+    reject_prob[, m] = prob_rec[index, ]
+    
+    setTxtProgressBar(pb, ((j - 1) * M +  m) / (l * M))
+  }
+  early1[, j] = rowMeans(post_cluster_all == 1)
+  early2[, j] = rowMeans(reject_prob)
 }
 
 early1
