@@ -22,6 +22,7 @@ cor_est = function(response, activity, N, ninter, n.adapt = 1000, n.burn = 1000,
 #### MCMC Sampling and likelihood for the interim stage, using response
 post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
+  mu1_rec = matrix(0, length(group), n.iter)
   
   ## Cluster 1
   ind = which(group == 1)
@@ -39,6 +40,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                                 variable.names = c("mu1"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = 1)
+    mu1_rec[ind, ] = mu1
     #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
     #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
@@ -62,6 +64,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                                 variable.names = c("mu1", "mumix1", "muprec1"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = N)
+    mu1_rec[ind, ] = mu1
     mumix1 = matrix(res.bugs$mumix1, nrow = 1)
     muprec1 = matrix(res.bugs$muprec1, nrow = 1)
     #p3 = dnorm(mumix2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
@@ -93,6 +96,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                                 variable.names = c("mu1"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = 1)
+    mu1_rec[ind, ] = mu1
     #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
     #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
@@ -116,6 +120,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                                 variable.names = c("mu1", "mumix1", "muprec1"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = N)
+    mu1_rec[ind, ] = mu1
     mumix1 = matrix(res.bugs$mumix1, nrow = 1)
     muprec1 = matrix(res.bugs$muprec1, nrow = 1)
     #p3 = dnorm(mumix2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
@@ -130,13 +135,14 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
       rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
     }
   }
-  return (rst)
+  return (list("factor" = rst, "mu1_rec" = mu1_rec))
 }
 
 
 #### MCMC Sampling and likelihood for the interim stage, using activity
 post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
+  mu2_rec = matrix(0, length(group), n.iter)
   
   ## Cluster 1
   ind = which(group == 1)
@@ -155,6 +161,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                                 variable.names = c("mu2", "prec"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu2 = matrix(res.bugs$mu2, nrow = 1)
+    mu2_rec[ind, ] = mu2
     prec = matrix(res.bugs$prec, nrow = 1)
     #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
@@ -181,6 +188,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                                 variable.names = c("mu2", "prec", "mumix2", "muprec2"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu2 = matrix(res.bugs$mu2, nrow = N)
+    mu2_rec[ind, ] = mu2
     prec = matrix(res.bugs$prec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
@@ -215,6 +223,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                                 variable.names = c("mu2", "prec"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu2 = matrix(res.bugs$mu2, nrow = 1)
+    mu2_rec[ind, ] = mu2
     prec = matrix(res.bugs$prec, nrow = 1)
     #p2 = dnorm(mu2, mean = 1, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 1, sd = 1 / sqrt(0.00001), lower.tail = FALSE, log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
@@ -241,6 +250,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                                 variable.names = c("mu2", "prec", "mumix2", "muprec2"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu2 = matrix(res.bugs$mu2, nrow = N)
+    mu2_rec[ind, ] = mu2
     prec = matrix(res.bugs$prec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
@@ -257,7 +267,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
       }
     }
   }
-  return (rst)
+  return (list("factor" = rst, "mu2_rec" = mu2_rec))
 }
 
 
