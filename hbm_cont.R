@@ -28,7 +28,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
   ind = which(group == 1)
   N = length(ind)
   if (N == 1) {
-    r1 = sum(activity[ind, ])
+    r1 = sum(response[ind, ])
     dat = list(response = r1,
                ninter = n1,
                cutoff1 = cutoff_int)
