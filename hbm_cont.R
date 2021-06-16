@@ -19,7 +19,7 @@ cor_est = function(response, activity, N, ninter, n.adapt = 1000, n.burn = 1000,
 }
 
 
-#### MCMC Sampling and likelihood for the interim stage, using response
+#### MCMC Sampling and likelihood for the interim stage, using response (sum of response)
 post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
   mu1_rec = matrix(0, length(group), n.iter)

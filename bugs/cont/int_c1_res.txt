@@ -2,9 +2,7 @@
 
 model { 
   for (i in 1:N) {
-    for (j in 1:ninter) {
-      activity[i, j] ~ dbern(prob[i])
-    }
+    response[i] ~ dbin(prob[i], ninter)
     prob[i] <- 1 - pnorm(0, mu1[i], 1)
     mu1[i] ~ dnorm(mumix1, muprec1)T(, cutoff1)
   }
