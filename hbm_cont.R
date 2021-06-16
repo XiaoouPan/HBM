@@ -28,7 +28,8 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
   ind = which(group == 1)
   N = length(ind)
   if (N == 1) {
-    dat = list(response = response[ind, ],
+    r1 = sum(activity[ind, ])
+    dat = list(response = r1,
                ninter = n1,
                cutoff1 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c1_uni_res.txt", 
@@ -44,12 +45,11 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
     #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
-    r1 = sum(activity[ind, ])
     p0 = pnorm(0, mean = mu1, sd = 1)
     rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
   } else if (N >= 2) {
     response_sub = response[ind, ]
-    dat = list(response = response_sub,
+    dat = list(response = rowSums(response_sub),
                N = N,
                ninter = n1,
                cutoff1 = cutoff_int)
@@ -84,7 +84,8 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
   ind = which(group == 2)
   N = length(ind)
   if (N == 1) {
-    dat = list(response = response[ind, ],
+    r1 = sum(response[ind, ])
+    dat = list(response = r1,
                ninter = n1,
                cutoff1 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c2_uni_res.txt", 
@@ -100,12 +101,11 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
     #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
-    r1 = sum(activity[ind, ])
     p0 = pnorm(0, mean = mu1, sd = 1)
     rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
   } else if (N >= 2) {
     response_sub = response[ind, ]
-    dat = list(response = response_sub,
+    dat = list(response = rowSums(response_sub),
                N = N,
                ninter = n1,
                cutoff1 = cutoff_int)
