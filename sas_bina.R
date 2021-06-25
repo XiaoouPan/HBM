@@ -2,7 +2,7 @@
 #### MCMC Sampling and calculate likelihood for the final stage
 post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
-  mu1_rec = mu2_rec = matrix(0, 3, n.iter)
+  mu1_rec = mu2_rec = matrix(NA, length(group), n.iter)
   
   ## Cluster 1
   ind = which(group == 1)
@@ -30,8 +30,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     mu1 = matrix(res.bugs$mu1, nrow = 1)
     mu2 = matrix(res.bugs$mu2, nrow = 1)
     rho = matrix(res.bugs$rho, nrow = 1)
-    mu1_rec[1, ] = mu1
-    mu2_rec[1, ] = mu2
+    mu1_rec[ind, ] = matrix(rep(mu1, N), nrow = N, byrow = TRUE)
+    mu2_rec[ind, ] = matrix(rep(mu2, N), nrow = N, byrow = TRUE)
     p00 = pbivnorm(-mu1, -mu2, rho)
     p01 = pnorm(0, mean = mu1) - p00
     p10 = pnorm(0, mean = mu2) - p00
@@ -69,8 +69,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     mu1 = matrix(res.bugs$mu1, nrow = 1)
     mu2 = matrix(res.bugs$mu2, nrow = 1)
     rho = matrix(res.bugs$rho, nrow = 1)
-    mu1_rec[2, ] = mu1
-    mu2_rec[2, ] = mu2
+    mu1_rec[ind, ] = matrix(rep(mu1, N), nrow = N, byrow = TRUE)
+    mu2_rec[ind, ] = matrix(rep(mu2, N), nrow = N, byrow = TRUE)
     p00 = pbivnorm(-mu1, -mu2, rho)
     p01 = pnorm(0, mean = mu1) - p00
     p10 = pnorm(0, mean = mu2) - p00
@@ -107,8 +107,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     mu1 = matrix(res.bugs$mu1, nrow = 1)
     mu2 = matrix(res.bugs$mu2, nrow = 1)
     rho = matrix(res.bugs$rho, nrow = 1)
-    mu1_rec[3, ] = mu1
-    mu2_rec[3, ] = mu2
+    mu1_rec[ind, ] = matrix(rep(mu1, N), nrow = N, byrow = TRUE)
+    mu2_rec[ind, ] = matrix(rep(mu2, N), nrow = N, byrow = TRUE)
     p00 = pbivnorm(-mu1, -mu2, rho)
     p01 = pnorm(0, mean = mu1) - p00
     p10 = pnorm(0, mean = mu2) - p00
