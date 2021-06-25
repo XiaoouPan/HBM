@@ -23,13 +23,13 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                                             mu2 = 0,
                                             rho = 0.5),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
-    update(thismodel, n.burn, progress.bar = "none") 
+    try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu1", "mu2", "rho"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu1 = matrix(res.bugs$mu1, nrow = 1)
-    mu2 = matrix(res.bugs$mu2, nrow = 1)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    mu1 = as.numeric(res.bugs$mu1)
+    mu2 = as.numeric(res.bugs$mu2)
+    rho = as.numeric(res.bugs$rho)
     mu1_rec[ind, ] = matrix(rep(mu1, N), nrow = N, byrow = TRUE)
     mu2_rec[ind, ] = matrix(rep(mu2, N), nrow = N, byrow = TRUE)
     p00 = pbivnorm(-mu1, -mu2, rho)
@@ -39,7 +39,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     s00 = sum(response_sub == 0 & activity_sub == 0)
     s01 = sum(response_sub == 0 & activity_sub == 1)
     s10 = sum(response_sub == 1 & activity_sub == 0)
-    s10 = sum(response_sub == 1 & activity_sub == 1)
+    s11 = sum(response_sub == 1 & activity_sub == 1)
     rst = rst + s00 * mean(log(p00), na.rm = T) + s01 * mean(log(p01), na.rm = T) + s10 * mean(log(p10), na.rm = T) + s11 * mean(log(p11), na.rm = T)
   }
   
@@ -62,13 +62,13 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                                             mu2 = 1,
                                             rho = 0.5),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
-    update(thismodel, n.burn, progress.bar = "none") 
+    try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu1", "mu2", "rho"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu1 = matrix(res.bugs$mu1, nrow = 1)
-    mu2 = matrix(res.bugs$mu2, nrow = 1)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    mu1 = as.numeric(res.bugs$mu1)
+    mu2 = as.numeric(res.bugs$mu2)
+    rho = as.numeric(res.bugs$rho)
     mu1_rec[ind, ] = matrix(rep(mu1, N), nrow = N, byrow = TRUE)
     mu2_rec[ind, ] = matrix(rep(mu2, N), nrow = N, byrow = TRUE)
     p00 = pbivnorm(-mu1, -mu2, rho)
@@ -78,7 +78,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     s00 = sum(response_sub == 0 & activity_sub == 0)
     s01 = sum(response_sub == 0 & activity_sub == 1)
     s10 = sum(response_sub == 1 & activity_sub == 0)
-    s10 = sum(response_sub == 1 & activity_sub == 1)
+    s11 = sum(response_sub == 1 & activity_sub == 1)
     rst = rst + s00 * mean(log(p00), na.rm = T) + s01 * mean(log(p01), na.rm = T) + s10 * mean(log(p10), na.rm = T) + s11 * mean(log(p11), na.rm = T)
   }
   
@@ -100,13 +100,13 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                                             mu2 = 1,
                                             rho = 0.5),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
-    update(thismodel, n.burn, progress.bar = "none") 
+    try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE) 
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu1", "mu2", "rho"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu1 = matrix(res.bugs$mu1, nrow = 1)
-    mu2 = matrix(res.bugs$mu2, nrow = 1)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    mu1 = as.numeric(res.bugs$mu1)
+    mu2 = as.numeric(res.bugs$mu2)
+    rho = as.numeric(res.bugs$rho)
     mu1_rec[ind, ] = matrix(rep(mu1, N), nrow = N, byrow = TRUE)
     mu2_rec[ind, ] = matrix(rep(mu2, N), nrow = N, byrow = TRUE)
     p00 = pbivnorm(-mu1, -mu2, rho)
@@ -116,7 +116,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     s00 = sum(response_sub == 0 & activity_sub == 0)
     s01 = sum(response_sub == 0 & activity_sub == 1)
     s10 = sum(response_sub == 1 & activity_sub == 0)
-    s10 = sum(response_sub == 1 & activity_sub == 1)
+    s11 = sum(response_sub == 1 & activity_sub == 1)
     rst = rst + s00 * mean(log(p00), na.rm = T) + s01 * mean(log(p01), na.rm = T) + s10 * mean(log(p10), na.rm = T) + s11 * mean(log(p11), na.rm = T)
   }
   

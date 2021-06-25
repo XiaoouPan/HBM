@@ -13,7 +13,7 @@ ninter = 22
 n1 = 11
 N = 4
 C = 3
-M = 5
+M = 1
 n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
@@ -107,7 +107,7 @@ report = cbind(cluster,
                rowMeans(reject_prob | reject_acti, na.rm = TRUE),
                rowMeans(reject_prob & reject_acti, na.rm = TRUE))
 report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3", "true_p", "p_hat", "p_CI", "true_mu", "mu_hat", "mu_CI", "weak", "strong")
+colnames(report) = c("cluster", "C1", "C2", "C3", "true_p", "p_hat", "p_CI", "true_a", "a_hat", "a_CI", "weak", "strong")
 report
 
 
