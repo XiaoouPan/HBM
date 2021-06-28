@@ -3,18 +3,13 @@
 model { 
   for (i in 1:N) {
     for (j in 1:ninter) {
-      response[i, j] ~ dinterval(Z[i, j, 1], 0)
-      activity[i, j] ~ dinterval(Z[i, j, 2], 0)
-      Z[i, j, 1:2] ~ dmnorm(c(mu1, mu2), prec)
+      outcome[i, j] ~ dcat(prob)
     }
   }
-  mu1 ~ dnorm(1, 0.00001)T(cutoff, )
-  mu2 ~ dnorm(1, 0.00001)
-  prec[1, 1] <- 1.0 / (1 - rho * rho)
-  prec[1, 2] <- -rho / (1 - rho * rho)
-  prec[2, 1] <- -rho / (1 - rho * rho)
-  prec[2, 2] <- 1.0 / (1 - rho * rho)
-  rho ~ dunif(-1, 1)
+  prob[1] <- 1.0 / ((1 + exp(theta)) * (1 + exp(eta)))
+  prob[2] <- exp(theta) / ((1 + exp(theta)) * (1 + exp(eta)))
+  prob[3] <- exp(eta) / (1 + exp(eta))
+  theta ~ dnorm(-0.5, 0.00001)
+  eta ~ dnorm(0, 0.00001)T(cutoff2, )
 }
-
 
