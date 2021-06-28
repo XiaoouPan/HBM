@@ -44,8 +44,8 @@ mu2 = qnorm(a0 + epsilon_a)
 p_c0 = pbivnorm(-mu1, -mu2, rho0)
 p_c1 = pnorm(0, mean = mu1) - p_c0
 p_c2 = pnorm(0, mean = mu1, lower.tail = FALSE)
-cutoff = log(p_c1 / p_c0)
-cutoff2 = log(p_c2 / (1 - p_c2))
+cutoff = log(p_c1 / p_c0)[1]
+cutoff2 = log(p_c2 / (1 - p_c2))[1]
 
 ## true parameters for triCRM
 mu1 = qnorm(prob)
@@ -59,7 +59,6 @@ p_c2 = pnorm(0, mean = mu1, lower.tail = FALSE)
 #s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
 post_cluster_all = matrix(0, N, M)
 #early_stop = matrix(0, N, M)
-reject_weak = reject_strong = matrix(0, N, M)
 post_p_c0_all = post_p_c0_upper_all = post_p_c0_lower_all = matrix(NA, N, M)
 post_p_c1_all = post_p_c1_upper_all = post_p_c1_lower_all = matrix(NA, N, M)
 post_p_c2_all = post_p_c2_upper_all = post_p_c2_lower_all = matrix(NA, N, M)
@@ -91,29 +90,29 @@ for (m in 1:M) {
   p_c2_est = p_c2_upper_rec = p_c2_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
     group = all_cluster[i, ]
-    res = post_crm(response, activity, ninter, group, cutoff, cutoff2, n.adapt, n.burn, n.iter)
-    this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
-    prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
-    prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
-    prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 0.975))
-    prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, 0.025))
-    this_acti = pnorm(0, mean = qnorm(a0) + res$mu2_rec, sd = 1, lower.tail = FALSE)
-    acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
-    acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > a0) > reject_rate))
-    acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 0.975))
-    acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, 0.025))
+    res = post_crm(outcome, ninter, group, cutoff, cutoff2, n.adapt, n.burn, n.iter)
+    p_c0_est = rbind(p_c0_est, as.numeric(rowMeans(res$p_c0_rec)))
+    p_c0_upper_rec = rbind(p_c0_upper_rec, apply(p_c0_est, 1, quantile, 0.975))
+    p_c0_lower_rec = rbind(p_c0_lower_rec, apply(p_c0_est, 1, quantile, 0.025))
+    p_c1_est = rbind(p_c1_est, as.numeric(rowMeans(res$p_c1_rec)))
+    p_c1_upper_rec = rbind(p_c1_upper_rec, apply(p_c1_est, 1, quantile, 0.975))
+    p_c1_lower_rec = rbind(p_c1_lower_rec, apply(p_c1_est, 1, quantile, 0.025))
+    p_c2_est = rbind(p_c2_est, as.numeric(rowMeans(res$p_c2_rec)))
+    p_c2_upper_rec = rbind(p_c2_upper_rec, apply(p_c2_est, 1, quantile, 0.975))
+    p_c2_lower_rec = rbind(p_c2_lower_rec, apply(p_c2_est, 1, quantile, 0.025))
     bayes_cluster = c(bayes_cluster, res$factor)# this the result vector of BF after iterating thru every permutation
   }
   index = which.max(bayes_cluster)
   post_cluster_all[, m] = all_cluster[index, ]
-  reject_prob[, m] = prob_rec[index, ]
-  reject_acti[, m] = acti_rec[index, ]
-  post_prob_all[, m] = prob_est[index, ]
-  post_prob_upper_all[, m] = prob_upper_rec[index, ]
-  post_prob_lower_all[, m] = prob_lower_rec[index, ]
-  post_acti_all[, m] = acti_est[index, ]
-  post_acti_upper_all[, m] = acti_upper_rec[index, ]
-  post_acti_lower_all[, m] = acti_lower_rec[index, ]
+  post_p_c0_all[, m] = p_c0_est[index, ]
+  post_p_c0_upper_all[, m] = p_c0_upper_rec[index, ]
+  post_p_c0_lower_all[, m] = p_c0_lower_rec[index, ]
+  post_p_c1_all[, m] = p_c1_est[index, ]
+  post_p_c1_upper_all[, m] = p_c1_upper_rec[index, ]
+  post_p_c1_lower_all[, m] = p_c1_lower_rec[index, ]
+  post_p_c2_all[, m] = p_c2_est[index, ]
+  post_p_c2_upper_all[, m] = p_c2_upper_rec[index, ]
+  post_p_c2_lower_all[, m] = p_c2_lower_rec[index, ]
   
   setTxtProgressBar(pb, m / M)
 }
@@ -124,16 +123,17 @@ report = cbind(cluster,
                rowMeans(post_cluster_all == 1),
                rowMeans(post_cluster_all == 2),
                rowMeans(post_cluster_all == 3),
-               prob,
-               rowMeans(post_prob_all, na.rm = TRUE),
-               rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE),
-               acti,
-               rowMeans(post_acti_all, na.rm = TRUE),
-               rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE),
-               rowMeans(reject_prob | reject_acti, na.rm = TRUE),
-               rowMeans(reject_prob & reject_acti, na.rm = TRUE))
+               p_c0,
+               rowMeans(post_p_c0_all, na.rm = TRUE),
+               rowMeans(post_p_c0_lower_all < p_c0 & post_p_c0_upper_all > p_c0, na.rm = TRUE),
+               p_c1,
+               rowMeans(post_p_c1_all, na.rm = TRUE),
+               rowMeans(post_p_c1_lower_all < p_c1 & post_p_c1_upper_all > p_c1, na.rm = TRUE),
+               p_c2,
+               rowMeans(post_p_c2_all, na.rm = TRUE),
+               rowMeans(post_p_c2_lower_all < p_c2 & post_p_c2_upper_all > p_c2, na.rm = TRUE))
 report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3", "true_p", "p_hat", "p_CI", "true_a", "a_hat", "a_CI", "weak", "strong")
+colnames(report) = c("cluster", "C1", "C2", "C3", "p_c0", "p_c0_hat", "p_c0_CI", "p_c1", "p_c1_hat", "p_c1_CI", "p_c2", "p_c2_hat", "p_c2_CI")
 report
 
 

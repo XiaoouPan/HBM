@@ -126,7 +126,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
 
 
 
-#### MCMC Sampling and calculate likelihood for the final stage
+#### triCRM: MCMC Sampling and calculate likelihood for the final stage
 post_crm = function(outcome, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
   p_c0_rec = p_c1_rec = p_c2_rec = matrix(NA, length(group), n.iter)
@@ -143,8 +143,7 @@ post_crm = function(outcome, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.b
                cutoff2 = cutoff2)
     thismodel = try(jags.model(file = "bugs/sas_binary/c1_crm.txt", 
                                data = dat, 
-                               inits = list(prob = c(0.8, 0.1, 0.1),
-                                            theta = -2.5,
+                               inits = list(theta = -2.5,
                                             eta = -2),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
     try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
@@ -177,8 +176,7 @@ post_crm = function(outcome, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.b
                cutoff2 = cutoff2)
     thismodel = try(jags.model(file = "bugs/sas_binary/c2_crm.txt", 
                                data = dat, 
-                               inits = list(prob = c(0.5, 0.4, 0.1),
-                                            theta = -0.5,
+                               inits = list(theta = -0.5,
                                             eta = -2),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
     try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
@@ -210,8 +208,7 @@ post_crm = function(outcome, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.b
                cutoff2 = cutoff2)
     thismodel = try(jags.model(file = "bugs/sas_binary/c3_crm.txt", 
                                data = dat, 
-                               inits = list(prob = c(0.3, 0.2, 0.5),
-                                            theta = -0.5,
+                               inits = list(theta = -0.5,
                                             eta = 0),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
     try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)

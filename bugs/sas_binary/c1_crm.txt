@@ -3,7 +3,7 @@
 model { 
   for (i in 1:N) {
     for (j in 1:ninter) {
-      outcome[i, j] ~ dcat(prob)
+      outcome[i, j] ~ dcat(prob[1:3])
     }
   }
   prob[1] <- 1.0 / ((1 + exp(theta)) * (1 + exp(eta)))
