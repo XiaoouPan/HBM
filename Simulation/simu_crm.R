@@ -25,18 +25,22 @@ epsilon_a = 0.1
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 a0 = c(0.15, 0.15, 0.15, 0.15) ## null activity level
 rho0 = 0.5
-reject_rate = 0.9 ## For hypothesis testing
+alpha = 0.026
+reject_rate = 1 - alpha ## For hypothesis testing
 
 prob = c(0.15, 0.15, 0.15, 0.15) ## true p
 acti = c(0.15, 0.15, 0.15, 0.15)  ## true activity
-mu1 = qnorm(p0 + epsilon_p)
-mu2 = qnorm(a0 + epsilon_a)
 cluster = c(1, 1, 1, 1) ## true cluster structure
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
-Z = matrix(0, ninter, 2) ## underlying bivariate normal, one of them is unobservable
+outcome = matrix(0, N, ninter)
+Z = matrix(0, ninter, 2) ## underlying bivariate normal
 Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
+
+## calculate corresponding cutoffs
+mu1 = qnorm(p0 + epsilon_p)
+mu2 = qnorm(a0 + epsilon_a)
 p_c0 = pbivnorm(-mu1, -mu2, rho0)
 p_c1 = pnorm(0, mean = mu1) - p_c0
 p_c2 = pnorm(0, mean = mu1, lower.tail = FALSE)
@@ -47,7 +51,7 @@ cutoff2 = log(p_c2 / (1 - p_c2))
 #s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
 post_cluster_all = matrix(0, N, M)
 #early_stop = matrix(0, N, M)
-reject_prob = reject_acti = matrix(0, N, M)
+reject_weak = reject_strong = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
 all_cluster = permutations(n = C, r = N, repeats.allowed = T)
