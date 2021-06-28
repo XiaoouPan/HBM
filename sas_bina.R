@@ -127,23 +127,21 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
 
 
 #### MCMC Sampling and calculate likelihood for the final stage
-post_crm = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+post_crm = function(outcome, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
-  mu1_rec = mu2_rec = matrix(NA, length(group), n.iter)
+  p_c0_rec = p_c1_rec = p_c2_rec = matrix(NA, length(group), n.iter)
   
   ## Cluster 1
   ind = which(group == 1)
   N = length(ind)
   if (N >= 1) {
-    activity_sub = activity[ind, , drop = FALSE]
-    response_sub = response[ind, , drop = FALSE]
-    dat = list(response = response_sub,
-               activity = activity_sub,
+    outcome_sub = outcome[ind, , drop = FALSE]
+    dat = list(outcome = outcome_sub,
                N = N,
                ninter = ninter,
                cutoff = cutoff,
                cutoff2 = cutoff2)
-    thismodel = try(jags.model(file = "bugs/sas_binary/c1.txt", 
+    thismodel = try(jags.model(file = "bugs/sas_binary/c1_crm.txt", 
                                data = dat, 
                                inits = list(Z = array(c(dat$response, dat$activity), dim = c(dat$N, dat$ninter, 2)),
                                             mu1 = 0,

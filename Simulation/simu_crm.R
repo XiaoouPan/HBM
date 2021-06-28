@@ -29,7 +29,7 @@ alpha = 0.026
 reject_rate = 1 - alpha ## For hypothesis testing
 
 prob = c(0.15, 0.15, 0.15, 0.15) ## true p
-acti = c(0.15, 0.15, 0.15, 0.15)  ## true activity
+prob = c(0.15, 0.15, 0.15, 0.15)  ## true activity
 cluster = c(1, 1, 1, 1) ## true cluster structure
 
 response = matrix(0, N, ninter)
@@ -47,9 +47,9 @@ p_c2 = pnorm(0, mean = mu1, lower.tail = FALSE)
 cutoff = log(p_c1 / p_c0)
 cutoff2 = log(p_c2 / (1 - p_c2))
 
-## null parameters
-mu1 = qnorm(p0)
-mu2 = qnorm(a0)
+## true parameters for triCRM
+mu1 = qnorm(prob)
+mu2 = qnorm(prob)
 p_c0 = pbivnorm(-mu1, -mu2, rho0)
 p_c1 = pnorm(0, mean = mu1) - p_c0
 p_c2 = pnorm(0, mean = mu1, lower.tail = FALSE)
@@ -60,8 +60,9 @@ p_c2 = pnorm(0, mean = mu1, lower.tail = FALSE)
 post_cluster_all = matrix(0, N, M)
 #early_stop = matrix(0, N, M)
 reject_weak = reject_strong = matrix(0, N, M)
-post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
-post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
+post_p_c0_all = post_p_c0_upper_all = post_p_c0_lower_all = matrix(NA, N, M)
+post_p_c1_all = post_p_c1_upper_all = post_p_c1_lower_all = matrix(NA, N, M)
+post_p_c2_all = post_p_c2_upper_all = post_p_c2_lower_all = matrix(NA, N, M)
 all_cluster = permutations(n = C, r = N, repeats.allowed = T)
 
 
@@ -73,14 +74,24 @@ for (m in 1:M) {
     Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
     response[i, ] = as.numeric(Z[, 1] > 0)
     activity[i, ] = as.numeric(Z[, 2] > 0)
+    for (j in 1:ninter) {
+      if (response[i, j] == 0 & activity[i, j] == 0) {
+        outcome[i, j] = 1
+      } else if (response[i, j] == 0 & activity[i, j] == 1) {
+        outcome[i, j] = 2
+      } else {
+        outcome[i, j] = 3
+      }
+    }
   }
   
   bayes_cluster = NULL
-  prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
-  acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL 
+  p_c0_est = p_c0_upper_rec = p_c0_lower_rec = NULL 
+  p_c1_est = p_c1_upper_rec = p_c1_lower_rec = NULL
+  p_c2_est = p_c2_upper_rec = p_c2_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
     group = all_cluster[i, ]
-    res = post(response, activity, ninter, group, cutoff, cutoff2, n.adapt, n.burn, n.iter)
+    res = post_crm(response, activity, ninter, group, cutoff, cutoff2, n.adapt, n.burn, n.iter)
     this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
     prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
     prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
