@@ -46,6 +46,14 @@ p_c1 = pnorm(0, mean = mu1) - p_c0
 p_c2 = pnorm(0, mean = mu1, lower.tail = FALSE)
 cutoff = log(p_c1 / p_c0)
 cutoff2 = log(p_c2 / (1 - p_c2))
+
+## null parameters
+mu1 = qnorm(p0)
+mu2 = qnorm(a0)
+p_c0 = pbivnorm(-mu1, -mu2, rho0)
+p_c1 = pnorm(0, mean = mu1) - p_c0
+p_c2 = pnorm(0, mean = mu1, lower.tail = FALSE)
+
 #cutoff_int1 = qnorm(p0[1] + epsilon_1) - qnorm(p0[1])
 #cutoff_int2 = epsilon_2
 #s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
