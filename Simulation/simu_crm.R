@@ -4,6 +4,9 @@ library(rjags)
 library(gtools)
 library(mvtnorm)
 library(pbivnorm)
+library(tikzDevice)
+library(ggplot2)
+
 
 rm(list = ls())
 
@@ -91,15 +94,18 @@ for (m in 1:M) {
   for (i in 1:nrow(all_cluster)) {
     group = all_cluster[i, ]
     res = post_crm(outcome, ninter, group, cutoff, cutoff2, n.adapt, n.burn, n.iter)
-    p_c0_est = rbind(p_c0_est, as.numeric(rowMeans(res$p_c0_rec)))
-    p_c0_upper_rec = rbind(p_c0_upper_rec, apply(p_c0_est, 1, quantile, 0.975))
-    p_c0_lower_rec = rbind(p_c0_lower_rec, apply(p_c0_est, 1, quantile, 0.025))
-    p_c1_est = rbind(p_c1_est, as.numeric(rowMeans(res$p_c1_rec)))
-    p_c1_upper_rec = rbind(p_c1_upper_rec, apply(p_c1_est, 1, quantile, 0.975))
-    p_c1_lower_rec = rbind(p_c1_lower_rec, apply(p_c1_est, 1, quantile, 0.025))
-    p_c2_est = rbind(p_c2_est, as.numeric(rowMeans(res$p_c2_rec)))
-    p_c2_upper_rec = rbind(p_c2_upper_rec, apply(p_c2_est, 1, quantile, 0.975))
-    p_c2_lower_rec = rbind(p_c2_lower_rec, apply(p_c2_est, 1, quantile, 0.025))
+    this_p_c0 = res$p_c0_rec
+    p_c0_est = rbind(p_c0_est, as.numeric(rowMeans(this_p_c0)))
+    p_c0_upper_rec = rbind(p_c0_upper_rec, apply(this_p_c0, 1, quantile, 0.975))
+    p_c0_lower_rec = rbind(p_c0_lower_rec, apply(this_p_c0, 1, quantile, 0.025))
+    this_p_c1 = res$p_c1_rec
+    p_c1_est = rbind(p_c1_est, as.numeric(rowMeans(this_p_c1)))
+    p_c1_upper_rec = rbind(p_c1_upper_rec, apply(this_p_c1, 1, quantile, 0.975))
+    p_c1_lower_rec = rbind(p_c1_lower_rec, apply(this_p_c1, 1, quantile, 0.025))
+    this_p_c2 = res$p_c2_rec
+    p_c2_est = rbind(p_c2_est, as.numeric(rowMeans(this_p_c2)))
+    p_c2_upper_rec = rbind(p_c2_upper_rec, apply(this_p_c2, 1, quantile, 0.975))
+    p_c2_lower_rec = rbind(p_c2_lower_rec, apply(this_p_c2, 1, quantile, 0.025))
     bayes_cluster = c(bayes_cluster, res$factor)# this the result vector of BF after iterating thru every permutation
   }
   index = which.max(bayes_cluster)
@@ -136,6 +142,36 @@ report = as.data.frame(report)
 colnames(report) = c("cluster", "C1", "C2", "C3", "p_c0", "p_c0_hat", "p_c0_CI", "p_c1", "p_c1_hat", "p_c1_CI", "p_c2", "p_c2_hat", "p_c2_CI")
 report
 
+
+
+resp = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/triCRM/resp_mix.csv")[, -1])
+acti = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/triCRM/acti_mix.csv")[, -1])
+
+M = 50
+response = as.numeric(c(resp[1, ], resp[2, ], resp[3, ], resp[4, ]))
+activity = as.numeric(c(acti[1, ], acti[2, ], acti[3, ], acti[4, ]))
+arm = c(rep("arm 1", M), rep("arm 2", M), rep("arm 3", M), rep("arm 4", M))
+arm = factor(arm, levels = c("arm 1", "arm 2", "arm 3", "arm 4"))
+rst = data.frame("response" = response, "activity" = activity, "arm" = arm)
+
+
+setwd("~/Dropbox/Mayo-intern/Simulation")
+tikz("plot.tex", standAlone = TRUE, width = 6, height = 5)
+ggplot(rst, aes(x = arm, y = response, fill = arm)) + 
+  geom_boxplot(alpha = 1, width = 0.7, outlier.colour = "red", outlier.fill = "red", outlier.size = 2, outlier.alpha = 1) + 
+  scale_fill_brewer(palette = "Dark2") + xlab("") + ylab("") + 
+  theme(axis.text = element_text(size = 15), axis.title = element_text(size = 25), legend.position = "none")
+dev.off()
+tools::texi2dvi("plot.tex", pdf = T)
+
+
+tikz("plot.tex", standAlone = TRUE, width = 6, height = 5)
+ggplot(rst, aes(x = arm, y = activity, fill = arm)) + 
+  geom_boxplot(alpha = 1, width = 0.7, outlier.colour = "red", outlier.fill = "red", outlier.size = 2, outlier.alpha = 1) + 
+  scale_fill_brewer(palette = "Dark2") + xlab("") + ylab("") + 
+  theme(axis.text = element_text(size = 15), axis.title = element_text(size = 25), legend.position = "none")
+dev.off()
+tools::texi2dvi("plot.tex", pdf = T)
 
 
 
