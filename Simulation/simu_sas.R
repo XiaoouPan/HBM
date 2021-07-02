@@ -10,7 +10,7 @@ library(ggplot2)
 
 rm(list = ls())
 
-source('sas_bina.R')
+source('sas_v2.R')
 
 ninter = 22
 n1 = 11
@@ -52,65 +52,40 @@ for (m in 1:M) {
     response[i, ] = as.numeric(Z[, 1] > 0)
     activity[i, ] = as.numeric(Z[, 2] > 0)
   }
-  
-  prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
-  acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL 
-  
-  for (i in 1:nrow(all_cluster)) {
-    group = all_cluster[i, ]
-    res = post_crm(outcome, ninter, group, cutoff, cutoff2, n.adapt, n.burn, n.iter)
-    this_p_c0 = res$p_c0_rec
-    p_c0_est = rbind(p_c0_est, as.numeric(rowMeans(this_p_c0)))
-    p_c0_upper_rec = rbind(p_c0_upper_rec, apply(this_p_c0, 1, quantile, 0.975))
-    p_c0_lower_rec = rbind(p_c0_lower_rec, apply(this_p_c0, 1, quantile, 0.025))
-    this_p_c1 = res$p_c1_rec
-    p_c1_est = rbind(p_c1_est, as.numeric(rowMeans(this_p_c1)))
-    p_c1_upper_rec = rbind(p_c1_upper_rec, apply(this_p_c1, 1, quantile, 0.975))
-    p_c1_lower_rec = rbind(p_c1_lower_rec, apply(this_p_c1, 1, quantile, 0.025))
-    this_p_c2 = res$p_c2_rec
-    p_c2_est = rbind(p_c2_est, as.numeric(rowMeans(this_p_c2)))
-    p_c2_upper_rec = rbind(p_c2_upper_rec, apply(this_p_c2, 1, quantile, 0.975))
-    p_c2_lower_rec = rbind(p_c2_lower_rec, apply(this_p_c2, 1, quantile, 0.025))
-    bayes_cluster = c(bayes_cluster, res$factor)# this the result vector of BF after iterating thru every permutation
-  }
-  index = which.max(bayes_cluster)
-  post_cluster_all[, m] = all_cluster[index, ]
-  post_p_c0_all[, m] = p_c0_est[index, ]
-  post_p_c0_upper_all[, m] = p_c0_upper_rec[index, ]
-  post_p_c0_lower_all[, m] = p_c0_lower_rec[index, ]
-  post_p_c1_all[, m] = p_c1_est[index, ]
-  post_p_c1_upper_all[, m] = p_c1_upper_rec[index, ]
-  post_p_c1_lower_all[, m] = p_c1_lower_rec[index, ]
-  post_p_c2_all[, m] = p_c2_est[index, ]
-  post_p_c2_upper_all[, m] = p_c2_upper_rec[index, ]
-  post_p_c2_lower_all[, m] = p_c2_lower_rec[index, ]
+
+  res = post_sas(response, activity, N, ninter, cluster, n.adapt, n.burn, n.iter)
+  this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
+  post_prob_all[, m] = as.numeric(rowMeans(this_prob))
+  reject_prob[, m] = as.numeric(rowMeans(this_prob > p0) > reject_rate)
+  post_prob_upper_all[, m] = apply(this_prob, 1, quantile, 0.975)
+  post_prob_lower_all[, m] = apply(this_prob, 1, quantile, 0.025)
+  this_acti = pnorm(0, mean = qnorm(a0) + res$mu2_rec, sd = 1, lower.tail = FALSE)
+  post_acti_all[, m] = as.numeric(rowMeans(this_acti))
+  reject_acti[, m] = as.numeric(rowMeans(this_acti > a0) > reject_rate)
+  post_acti_upper_all[, m] = apply(this_acti, 1, quantile, 0.975)
+  post_acti_lower_all[, m] = apply(this_acti, 1, quantile, 0.025)
   
   setTxtProgressBar(pb, m / M)
 }
 
 
 ## report
-report = cbind(cluster,
-               rowMeans(post_cluster_all == 1),
-               rowMeans(post_cluster_all == 2),
-               rowMeans(post_cluster_all == 3),
-               p_c0,
-               rowMeans(post_p_c0_all, na.rm = TRUE),
-               rowMeans(post_p_c0_lower_all < p_c0 & post_p_c0_upper_all > p_c0, na.rm = TRUE),
-               p_c1,
-               rowMeans(post_p_c1_all, na.rm = TRUE),
-               rowMeans(post_p_c1_lower_all < p_c1 & post_p_c1_upper_all > p_c1, na.rm = TRUE),
-               p_c2,
-               rowMeans(post_p_c2_all, na.rm = TRUE),
-               rowMeans(post_p_c2_lower_all < p_c2 & post_p_c2_upper_all > p_c2, na.rm = TRUE))
+report = cbind(prob,
+               rowMeans(post_prob_all, na.rm = TRUE),
+               rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE),
+               acti,
+               rowMeans(post_acti_all, na.rm = TRUE),
+               rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE),
+               rowMeans(reject_prob | reject_acti, na.rm = TRUE),
+               rowMeans(reject_prob & reject_acti, na.rm = TRUE))
 report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3", "p_c0", "p_c0_hat", "p_c0_CI", "p_c1", "p_c1_hat", "p_c1_CI", "p_c2", "p_c2_hat", "p_c2_CI")
+colnames(report) = c("true_p", "p_hat", "p_CI", "true_a", "a_hat", "a_CI", "weak", "strong")
 report
 
 
 
-resp = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/triCRM/resp_mix.csv")[, -1])
-acti = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/triCRM/acti_mix.csv")[, -1])
+#resp = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/triCRM/resp_mix.csv")[, -1])
+#acti = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/triCRM/acti_mix.csv")[, -1])
 
 M = 50
 response = as.numeric(c(resp[1, ], resp[2, ], resp[3, ], resp[4, ]))
