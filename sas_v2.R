@@ -1,3 +1,23 @@
+#### All possibilities of clustering
+getCluster = function(num = 4) {
+  rst = NULL
+  perm = permutations(n = C, r = N, repeats.allowed = T)
+  for (i in 1:length(perm)) {
+    a = perm[i, ]
+    add = TRUE
+    for (j in 1:num) {
+      if (a[a[j]] != a[j]) {
+        add = FALSE
+        break
+      }
+    }
+    if (add) {
+      rst = rbind(rst, a)
+    }
+  }
+  return (rst)
+}
+
 
 #### MCMC Sampling and calculate likelihood for the final stage
 post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
