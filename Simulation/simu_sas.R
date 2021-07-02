@@ -15,10 +15,10 @@ source('sas_v2.R')
 ninter = 22
 n1 = 11
 N = 4
-M = 1
-n.adapt = 1000
-n.burn = 1000
-n.iter = 5000
+M = 5
+n.adapt = 2000
+n.burn = 2000
+n.iter = 10000
 
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 a0 = c(0.15, 0.15, 0.15, 0.15) ## null activity level
@@ -26,9 +26,9 @@ rho0 = 0.5
 alpha = 0.026
 reject_rate = 1 - alpha ## For hypothesis testing
 
-prob = c(0.15, 0.15, 0.15, 0.15) ## true p
-acti = c(0.15, 0.15, 0.15, 0.15)  ## true activity
-cluster = c(1, 1, 1, 1) ## true cluster structure
+prob = c(0.15, 0.15, 0.45, 0.45) ## true p
+acti = c(0.15, 0.15, 0.45, 0.45)  ## true activity
+#cluster = c(1, 1, 1, 1) ## true cluster structure
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = qnorm(acti) - qnorm(a0)
 
@@ -84,8 +84,8 @@ report
 
 
 
-#resp = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/triCRM/resp_mix.csv")[, -1])
-#acti = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/triCRM/acti_mix.csv")[, -1])
+resp = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/SaS/prob_2act.csv")[, -1])
+acti = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/SaS/acti_2act.csv")[, -1])
 
 M = 50
 response = as.numeric(c(resp[1, ], resp[2, ], resp[3, ], resp[4, ]))
