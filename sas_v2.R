@@ -1,21 +1,21 @@
 #### All possibilities of clustering
 getCluster = function(num = 4) {
   rst = NULL
-  perm = permutations(n = C, r = N, repeats.allowed = T)
-  for (i in 1:length(perm)) {
-    a = perm[i, ]
+  perm = permutations(n = num, r = num, repeats.allowed = T)
+  for (i in 1:dim(perm)[1]) {
+    cluster = perm[i, ]
     add = TRUE
     for (j in 1:num) {
-      if (a[a[j]] != a[j]) {
+      if (cluster[cluster[j]] != cluster[j]) {
         add = FALSE
         break
       }
     }
     if (add) {
-      rst = rbind(rst, a)
+      rst = rbind(rst, cluster)
     }
   }
-  return (rst)
+  return (as.matrix(rst))
 }
 
 
