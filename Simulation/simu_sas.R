@@ -84,8 +84,8 @@ report
 
 
 
-resp = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/SaS/prob_2act.csv")[, -1])
-acti = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/SaS/acti_2act.csv")[, -1])
+resp = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/SaS/prob_4act.csv")[, -1])
+acti = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/SaS/acti_4act.csv")[, -1])
 
 M = 50
 response = as.numeric(c(resp[1, ], resp[2, ], resp[3, ], resp[4, ]))
