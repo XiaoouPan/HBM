@@ -32,7 +32,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     dat = list(response = r1,
                ninter = n1,
                cutoff1 = cutoff_int)
-    thismodel = try(jags.model(file = "bugs/cont/int_c1_uni_res.txt", 
+    thismodel = try(jags.model(file = "bugs/cont/int_c1_uni_resp.txt", 
                                data = dat, 
                                inits = list(mu1 = 0),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
@@ -53,7 +53,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                N = N,
                ninter = n1,
                cutoff1 = cutoff_int)
-    thismodel = try(jags.model(file = "bugs/cont/int_c1_res.txt", 
+    thismodel = try(jags.model(file = "bugs/cont/int_c1_resp.txt", 
                                data = dat, 
                                inits = list(mu1 = rep(0, N),
                                             mumix1 = 0,
@@ -88,7 +88,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     dat = list(response = r1,
                ninter = n1,
                cutoff1 = cutoff_int)
-    thismodel = try(jags.model(file = "bugs/cont/int_c2_uni_res.txt", 
+    thismodel = try(jags.model(file = "bugs/cont/int_c2_uni_resp.txt", 
                                data = dat, 
                                inits = list(mu1 = 1),
                                n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
@@ -109,7 +109,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                N = N,
                ninter = n1,
                cutoff1 = cutoff_int)
-    thismodel = try(jags.model(file = "bugs/cont/int_c2_res.txt", 
+    thismodel = try(jags.model(file = "bugs/cont/int_c2_resp.txt", 
                                data = dat, 
                                inits = list(mu1 = rep(1, N),
                                             mumix1 = 1,
@@ -151,7 +151,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     dat = list(activity = activity[ind, ],
                ninter = n1,
                cutoff2 = cutoff_int)
-    thismodel = try(jags.model(file = "bugs/cont/int_c1_uni.txt", 
+    thismodel = try(jags.model(file = "bugs/cont/int_c1_uni_acti.txt", 
                                data = dat, 
                                inits = list(mu2 = 0, 
                                             prec = 1),
@@ -176,7 +176,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                N = N,
                ninter = n1,
                cutoff2 = cutoff_int)
-    thismodel = try(jags.model(file = "bugs/cont/int_c1.txt", 
+    thismodel = try(jags.model(file = "bugs/cont/int_c1_acti.txt", 
                                data = dat, 
                                inits = list(mu2 = rep(0, N),
                                             prec = 1,
@@ -213,7 +213,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     dat = list(activity = activity[ind, ],
                ninter = n1,
                cutoff2 = cutoff_int)
-    thismodel = try(jags.model(file = "bugs/cont/int_c2_uni.txt", 
+    thismodel = try(jags.model(file = "bugs/cont/int_c2_uni_acti.txt", 
                                data = dat, 
                                inits = list(mu2 = 1,
                                             prec = 1),
@@ -238,7 +238,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
                N = N,
                ninter = n1,
                cutoff2 = cutoff_int)
-    thismodel = try(jags.model(file = "bugs/cont/int_c2.txt", 
+    thismodel = try(jags.model(file = "bugs/cont/int_c2_acti.txt", 
                                data = dat, 
                                inits = list(mu2 = rep(1, N),
                                             prec = 1,
