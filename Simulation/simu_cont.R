@@ -14,7 +14,7 @@ ninter = 22
 n1 = 11
 N = 4
 C = 3
-M = 5
+M = 50
 n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
@@ -118,6 +118,7 @@ for (m in 1:M) {
   response_remain = response[arm_remain, , drop = FALSE]
   activity_remain = activity[arm_remain, , drop = FALSE]
   all_cluster = permutations(n = C, r = N_remain, repeats.allowed = T)
+  bayes_cluster = NULL
   prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
   acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
@@ -157,16 +158,14 @@ report = cbind(cluster,
                rowMeans(post_cluster_all == 2),
                rowMeans(post_cluster_all == 3),
                rowMeans(early_stop), 
-               prob,
-               rowMeans(post_prob_all, na.rm = TRUE),
+               rowMeans(abs(post_prob_all - prob), na.rm = TRUE),
                rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE),
-               acti,
-               rowMeans(post_acti_all, na.rm = TRUE),
+               rowMeans(abs(post_acti_all - acti), na.rm = TRUE),
                rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE),
                rowMeans(reject_prob | reject_acti, na.rm = TRUE),
                rowMeans(reject_prob & reject_acti, na.rm = TRUE))
 report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3", "early", "true_p", "p_hat", "p_CI", "true_mu", "mu_hat", "mu_CI", "weak", "strong")
+colnames(report) = c("cluster", "C1", "C2", "C3", "early", "p_hat", "p_CI", "mu_hat", "mu_CI", "weak", "strong")
 report
 
 
