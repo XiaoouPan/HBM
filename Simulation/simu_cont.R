@@ -61,7 +61,7 @@ for (m in 1:M) {
   }
   
   ## Estimate correlation as preliminary analysis
-  cor_est = cor_est(response, activity, N, ninter, n.adapt, n.burn, n.iter)
+  cor_est = get_cor(response, activity, N, ninter, n.adapt, n.burn, n.iter)
   index = NULL
   prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
   acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL

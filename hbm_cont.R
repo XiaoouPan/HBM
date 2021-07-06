@@ -1,5 +1,5 @@
 #### Estimate the correlation as our first step
-cor_est = function(response, activity, N, ninter, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+get_cor = function(response, activity, N, ninter, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   dat = list(response = response,
              activity = activity,
              N = N,
