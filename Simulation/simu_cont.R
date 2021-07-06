@@ -165,7 +165,7 @@ report = cbind(cluster,
                rowMeans(reject_prob | reject_acti, na.rm = TRUE),
                rowMeans(reject_prob & reject_acti, na.rm = TRUE))
 report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3", "early", "p_hat", "p_CI", "mu_hat", "mu_CI", "weak", "strong")
+colnames(report) = c("cluster", "C1", "C2", "C3", "early", "p_err", "p_CI", "mu_err", "mu_CI", "weak", "strong")
 report
 
 
