@@ -3,6 +3,8 @@ library(coda)
 library(rjags) 
 library(gtools)
 library(mvtnorm)
+library(tikzDevice)
+library(ggplot2)
 
 rm(list = ls())
 
@@ -17,7 +19,7 @@ n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
 
-epsilon_p = 0.1
+epsilon_p = 0.15
 epsilon_mu = 0.5
 epsilon_1 = 0
 epsilon_2 = 0  ## buffer for the first stage
@@ -60,42 +62,47 @@ for (m in 1:M) {
   
   ## Estimate correlation as preliminary analysis
   cor_est = cor_est(response, activity, N, ninter, n.adapt, n.burn, n.iter)
-  bayes_cluster = NULL
   index = NULL
   prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
   acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL
   if (mean(cor_est > 0.5) > 0.9) {
-    ## stage 1 with only sctivity
+    ## stage 1 with only activity
+    bayes_cluster = NULL
     activity_s1 = activity[, 1:n1]
     for (i in 1:nrow(s1_cluster)) {
       group = s1_cluster[i, ]
       res = post_s1_acti(activity_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
       bayes_cluster = c(bayes_cluster, res$factor)
+      this_acti = mu0 + res$mu2_rec
+      acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
+      acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > mu0) > reject_rate))
+      acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 0.975))
+      acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, 0.025))
+    }
+    index = which.max(bayes_cluster)
+    reject_acti[, m] = acti_rec[index, ]
+    post_acti_all[, m] = acti_est[index, ]
+    post_acti_upper_all[, m] = acti_upper_rec[index, ]
+    post_acti_lower_all[, m] = acti_lower_rec[index, ]
+  } else {
+    ## stage 1 with only response
+    bayes_cluster = NULL
+    response_s1 = response[, 1:n1]
+    for (i in 1:nrow(s1_cluster)) {
+      group = s1_cluster[i, ]
+      res = post_s1_resp(response_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
+      bayes_cluster = c(bayes_cluster, res$factor)
       this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
       prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
       prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
-      prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 1 - alpha / 2))
-      prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, alpha / 2))
+      prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 0.975))
+      prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, 0.025))
     }
     index = which.max(bayes_cluster)
     reject_prob[, m] = prob_rec[index, ]
     post_prob_all[, m] = prob_est[index, ]
     post_prob_upper_all[, m] = prob_upper_rec[index, ]
     post_prob_lower_all[, m] = prob_lower_rec[index, ]
-  } else {
-    response_s1 = response[, 1:n1]
-    for (i in 1:nrow(s1_cluster)) {
-      group = s1_cluster[i, ]
-      res = post_s1_resp(response_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
-      bayes_cluster = c(bayes_cluster, res$factor)
-      this_acti = mu0 + res$mu2_rec
-      acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
-      acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > mu0) > reject_rate))
-      acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 1 - alpha / 2))
-      acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, alpha / 2))
-    }
-    index = which.max(bayes_cluster)
-  
   }
   if (sum(s1_cluster[index, ] == 1) == 4) {
     post_cluster_all[, m] = c(1, 1, 1, 1)
@@ -119,13 +126,13 @@ for (m in 1:M) {
     this_prob = pnorm(0, mean = qnorm(p0[arm_remain]) + res$mu1_rec, sd = 1, lower.tail = FALSE)
     prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
     prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0[arm_remain]) > reject_rate))
-    prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 1 - alpha / 2))
-    prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, alpha / 2))
+    prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 0.975))
+    prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, 0.025))
     this_acti = mu0[arm_remain] + res$mu2_rec
     acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
     acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > mu0[arm_remain]) > reject_rate))
-    acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 1 - alpha / 2))
-    acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, alpha / 2))
+    acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 0.975))
+    acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, 0.025))
     bayes_cluster = c(bayes_cluster, res$factor)# this the result vector of BF after iterating thru every permutation
   }
   index = which.max(bayes_cluster)
