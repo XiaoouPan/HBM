@@ -19,8 +19,8 @@ n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
 
-epsilon_p = 0.15
-epsilon_mu = 0.5
+epsilon_p = 0.2
+epsilon_mu = 0.75
 epsilon_1 = 0
 epsilon_2 = 0  ## buffer for the first stage
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
@@ -52,7 +52,7 @@ post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
 
 pb = txtProgressBar(style = 3)
 for (m in 1:M) {
-  #set.seed(m)
+  set.seed(m)
   ## Data generation
   for (i in 1:N) {
     Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
@@ -61,10 +61,10 @@ for (m in 1:M) {
   }
   
   ## Estimate correlation as preliminary analysis
-  cor_est = get_cor(response, activity, N, ninter, n.adapt, n.burn, n.iter)
+  cor_est = get_cor(response, activity, N, n1, n.adapt, n.burn, n.iter)
   index = NULL
-  prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
-  acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL
+  prob_rec = prob_est = NULL 
+  acti_rec = acti_est = NULL
   if (mean(cor_est > 0.5) > 0.9) {
     ## stage 1 with only activity
     bayes_cluster = NULL
@@ -76,14 +76,10 @@ for (m in 1:M) {
       this_acti = mu0 + res$mu2_rec
       acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
       acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > mu0) > reject_rate))
-      #acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 0.975))
-      #acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, 0.025))
     }
     index = which.max(bayes_cluster)
     reject_acti[, m] = acti_rec[index, ]
     post_acti_all[, m] = acti_est[index, ]
-    #post_acti_upper_all[, m] = acti_upper_rec[index, ]
-    #post_acti_lower_all[, m] = acti_lower_rec[index, ]
   } else {
     ## stage 1 with only response
     bayes_cluster = NULL
@@ -95,14 +91,10 @@ for (m in 1:M) {
       this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
       prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
       prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
-      #prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 0.975))
-      #prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, 0.025))
     }
     index = which.max(bayes_cluster)
     reject_prob[, m] = prob_rec[index, ]
     post_prob_all[, m] = prob_est[index, ]
-    #post_prob_upper_all[, m] = prob_upper_rec[index, ]
-    #post_prob_lower_all[, m] = prob_lower_rec[index, ]
   }
   if (sum(s1_cluster[index, ] == 1) == 4) {
     post_cluster_all[, m] = c(1, 1, 1, 1)
