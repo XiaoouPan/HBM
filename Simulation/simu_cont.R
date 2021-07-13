@@ -144,6 +144,22 @@ for (m in 1:M) {
 }
 
 
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous")
+cluster = c(1, 1, 1, 3)
+prob = c(0.15, 0.15, 0.15, 0.45) ## true p
+acti = c(3, 3, 3, 4)  ## true activity
+post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
+early_stop = as.matrix(read.csv("early.csv")[, -1])
+post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
+post_prob_lower_all = as.matrix(read.csv("prob_lower.csv")[, -1])
+post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
+post_acti_all = as.matrix(read.csv("acti.csv")[, -1])
+post_acti_lower_all = as.matrix(read.csv("acti_lower.csv")[, -1])
+post_acti_upper_all = as.matrix(read.csv("acti_upper.csv")[, -1])
+reject_prob = as.matrix(read.csv("rej_prob.csv")[, -1])
+reject_acti = as.matrix(read.csv("rej_acti.csv")[, -1])
+
+
 ## report
 report = cbind(cluster,
                rowMeans(post_cluster_all == 1),
