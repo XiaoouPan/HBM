@@ -1,9 +1,7 @@
-# Stage 1 with continuous activity
+# Stage 1 with binary activity
 
 model { 
-  for (j in 1:ninter) {
-    activity[j] ~ dnorm(mu2, prec)
-  }
+  activity ~ dbin(prob, ninter)
+  prob <- 1 - pnorm(0, mu2, 1)
   mu2 ~ dnorm(1, 0.00001)T(cutoff2, )
-  prec ~ dgamma(0.001, 0.001)
 }

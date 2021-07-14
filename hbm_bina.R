@@ -137,7 +137,124 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
 }
 
 
-
+#### MCMC Sampling and likelihood for the interim stage, using activity (sum of activity)
+post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+  rst = 0  ## Bayesian factor for this group
+  mu2_rec = matrix(0, length(group), n.iter)
+  
+  ## Cluster 1
+  ind = which(group == 1)
+  N = length(ind)
+  if (N == 1) {
+    r1 = sum(activity[ind, ])
+    dat = list(activity = r1,
+               ninter = n1,
+               cutoff2 = cutoff_int)
+    thismodel = try(jags.model(file = "bugs/binary/int_c1_uni_acti.txt", 
+                               data = dat, 
+                               inits = list(mu2 = 0),
+                               n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+    update(thismodel, n.burn, progress.bar = "none") 
+    res.bugs = try(jags.samples(thismodel, 
+                                variable.names = c("mu2"),
+                                n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+    mu2 = matrix(res.bugs$mu2, nrow = 1)
+    mu2_rec[ind, ] = mu2
+    #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
+    #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
+    p0 = pnorm(0, mean = mu2, sd = 1)
+    rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
+  } else if (N >= 2) {
+    activity_sub = activity[ind, ]
+    dat = list(activity = rowSums(activity_sub),
+               N = N,
+               ninter = n1,
+               cutoff2 = cutoff_int)
+    thismodel = try(jags.model(file = "bugs/binary/int_c1_acti.txt", 
+                               data = dat, 
+                               inits = list(mu2 = rep(0, N),
+                                            mumix2 = 0,
+                                            muprec2 = 1),
+                               n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+    update(thismodel, n.burn, progress.bar = "none") 
+    res.bugs = try(jags.samples(thismodel, 
+                                variable.names = c("mu2", "mumix2", "muprec2"),
+                                n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+    mu2 = matrix(res.bugs$mu1, nrow = N)
+    mu2_rec[ind, ] = mu2
+    mumix2 = matrix(res.bugs$mumix2, nrow = 1)
+    muprec2 = matrix(res.bugs$muprec2, nrow = 1)
+    #p3 = dnorm(mumix2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
+    #p4 = dgamma(muprec2, shape = 0.001, rate = 0.001, log = TRUE)
+    #p5 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    #rst = rst + (mean(p3, na.rm = T) + mean(p4, na.rm = T) + mean(p5, na.rm = T))
+    for (n in 1:N) {
+      p2 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE) #- pnorm(cutoff_int, mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE)
+      rst = rst + mean(p2, na.rm = T)
+      r1 = sum(activity_sub[n, ])
+      p0 = pnorm(0, mean = mu2[n, ], sd = 1)
+      rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
+    }
+  }
+  
+  ## Cluster 2
+  ind = which(group == 2)
+  N = length(ind)
+  if (N == 1) {
+    r1 = sum(activity[ind, ])
+    dat = list(activity = r1,
+               ninter = n1,
+               cutoff2 = cutoff_int)
+    thismodel = try(jags.model(file = "bugs/binary/int_c2_uni_acti.txt", 
+                               data = dat, 
+                               inits = list(mu2 = 1),
+                               n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+    update(thismodel, n.burn, progress.bar = "none") 
+    res.bugs = try(jags.samples(thismodel, 
+                                variable.names = c("mu2"),
+                                n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+    mu2 = matrix(res.bugs$mu2, nrow = 1)
+    mu2_rec[ind, ] = mu2
+    #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
+    #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
+    p0 = pnorm(0, mean = mu2, sd = 1)
+    rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
+  } else if (N >= 2) {
+    activity_sub = activity[ind, ]
+    dat = list(activity = rowSums(activity_sub),
+               N = N,
+               ninter = n1,
+               cutoff2 = cutoff_int)
+    thismodel = try(jags.model(file = "bugs/binary/int_c2_acti.txt", 
+                               data = dat, 
+                               inits = list(mu2 = rep(1, N),
+                                            mumix2 = 1,
+                                            muprec2 = 1),
+                               n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+    update(thismodel, n.burn, progress.bar = "none") 
+    res.bugs = try(jags.samples(thismodel, 
+                                variable.names = c("mu2", "mumix2", "muprec2"),
+                                n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+    mu2 = matrix(res.bugs$mu2, nrow = N)
+    mu2_rec[ind, ] = mu2
+    mumix2 = matrix(res.bugs$mumix2, nrow = 1)
+    muprec2 = matrix(res.bugs$muprec2, nrow = 1)
+    #p3 = dnorm(mumix2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
+    #p4 = dgamma(muprec2, shape = 0.001, rate = 0.001, log = TRUE)
+    #p5 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
+    #rst = rst + (mean(p3, na.rm = T) + mean(p4, na.rm = T) + mean(p5, na.rm = T))
+    for (n in 1:N) {
+      p2 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE) #- pnorm(cutoff_int, mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE)
+      rst = rst + mean(p2, na.rm = T)
+      r1 = sum(activity_sub[n, ])
+      p0 = pnorm(0, mean = mu2[n, ], sd = 1)
+      rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
+    }
+  }
+  return (list("factor" = rst, "mu2_rec" = mu2_rec))
+}
 
 
 
