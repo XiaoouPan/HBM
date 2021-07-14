@@ -1,0 +1,12 @@
+# Stage 1 with continuous activity
+
+model { 
+  for (i in 1:N) {
+    response[i] ~ dbin(prob[i], ninter)
+    prob[i] <- 1 - pnorm(0, mu1[i], 1)
+    mu1[i] ~ dnorm(mumix1, muprec1)T(cutoff1, )
+  }
+  mumix1 ~ dnorm(1, 0.00001)T(cutoff1, )
+  muprec1 ~ dgamma(0.001, 0.001)
+}
+

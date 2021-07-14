@@ -1,0 +1,7 @@
+# Stage 1 with continuous activity
+
+model { 
+  response ~ dbin(prob, ninter)
+  prob <- 1 - pnorm(0, mu1, 1)
+  mu1 ~ dnorm(1, 0.00001)T(cutoff1, )
+}
