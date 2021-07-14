@@ -1,5 +1,24 @@
-## Generate parameters based on posterior distributons
-## Activity is continuous, stage 1 based on activity
+#### Estimate the correlation as our first step
+get_cor = function(response, activity, N, ninter, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+  dat = list(response = response,
+             activity = activity,
+             N = N,
+             ninter = ninter)
+  thismodel = try(jags.model(file = "bugs/binary/cor.txt", 
+                             data = dat, 
+                             inits = list(mu1 = rep(0, N),
+                                          mu2 = rep(0, N),
+                                          prec = 1,
+                                          rho = 0.5),
+                             n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+  update(thismodel, n.burn, progress.bar = "none") 
+  res.bugs = try(jags.samples(thismodel, 
+                              variable.names = c("mu1", "mu2", "prec", "rho"),
+                              n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+  return (as.vector(res.bugs$rho))
+}
+
+
 posterior_simu_s1 = function (dat, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   thismodel = try(jags.model(file = "trial_ct_s1.txt", 
                              data = dat, 
