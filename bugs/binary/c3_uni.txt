@@ -2,14 +2,16 @@
 
 model { 
   for (j in 1:ninter) {
-    response[j] ~ dbern(1 - prob[j])
-    prob[j] <- pnorm(0, mu1 + rho * (activity[j] - mu2) * sqrt(prec), 1.0 / (1 - rho * rho))
-    activity[j] ~ dnorm(mu2, prec)
+    response[j] ~ dinterval(Z[j, 1], 0)
+    activity[j] ~ dinterval(Z[j, 2], 0)
+    Z[j, 1:2] ~ dmnorm(c(mu1, mu2), prec[1:2, 1:2])
   }
+  mu1 ~ dnorm(0, 0.00001)T(cutoff, )
+  mu2 ~ dnorm(0, 0.00001)
+  prec[1, 1] <- 1.0 / (1 - rho * rho)
+  prec[1, 2] <- -rho / (1 - rho * rho)
+  prec[2, 1] <- -rho / (1 - rho * rho)
+  prec[2, 2] <- 1.0 / (1 - rho * rho)
   rho ~ dunif(-1, 1)
-  mu1 ~ dnorm(1, 0.00001)T(cutoff, )
-  mu2 ~ dnorm(1, 0.00001)
-  prec ~ dgamma(0.001, 0.001)
 }
-
 
