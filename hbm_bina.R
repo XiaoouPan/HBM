@@ -15,7 +15,9 @@ get_cor = function(response, activity, N, n1, n.adapt = 1000, n.burn = 1000, n.i
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c("mu1", "mu2", "rho"),
                               n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-  return (as.vector(res.bugs$rho))
+  mu1 = matrix(res.bugs$mu1, nrow = N)
+  mu2 = matrix(res.bugs$mu2, nrow = N)
+  return (list("rho" = as.vector(res.bugs$rho), "mu1" = mu1, "mu2" = mu2))
 }
 
 #### MCMC Sampling and likelihood for the interim stage, using response (sum of response)
@@ -284,9 +286,9 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu1", "mu2", "rho"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu1 = matrix(res.bugs$mu1, nrow = 1)
-    mu2 = matrix(res.bugs$mu2, nrow = 1)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    mu1 = as.numeric(res.bugs$mu1)
+    mu2 = as.numeric(res.bugs$mu2)
+    rho = as.numeric(res.bugs$rho)
     mu1_rec[ind, ] = mu1
     mu2_rec[ind, ] = mu2
     #p3 = dnorm(mu1, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
@@ -327,7 +329,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = N)
     mu2 = matrix(res.bugs$mu2, nrow = N)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    rho = as.numeric(res.bugs$rho)
     mumix = matrix(res.bugs$mumix, nrow = 1)
     muprec = matrix(res.bugs$muprec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
@@ -375,9 +377,9 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu1", "mu2", "rho"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu1 = matrix(res.bugs$mu1, nrow = 1)
-    mu2 = matrix(res.bugs$mu2, nrow = 1)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    mu1 = as.numeric(res.bugs$mu1)
+    mu2 = as.numeric(res.bugs$mu2)
+    rho = as.numeric(res.bugs$rho)
     mu1_rec[ind, ] = mu1
     mu2_rec[ind, ] = mu2
     #p3 = dnorm(mu1, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
@@ -418,7 +420,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = N)
     mu2 = matrix(res.bugs$mu2, nrow = N)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    rho = as.numeric(res.bugs$rho)
     mumix = matrix(res.bugs$mumix, nrow = 1)
     muprec = matrix(res.bugs$muprec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
@@ -465,9 +467,9 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu1", "mu2", "rho"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu1 = matrix(res.bugs$mu1, nrow = 1)
-    mu2 = matrix(res.bugs$mu2, nrow = 1)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    mu1 = as.numeric(res.bugs$mu1)
+    mu2 = as.numeric(res.bugs$mu2)
+    rho = as.numeric(res.bugs$rho)
     mu1_rec[ind, ] = mu1
     mu2_rec[ind, ] = mu2
     #p3 = dnorm(mu1, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
@@ -493,7 +495,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     thismodel = try(jags.model(file = "bugs/binary/c3.txt", 
                                data = dat, 
                                inits = list(Z = array(c(dat$response, dat$activity), dim = c(dat$N, dat$ninter, 2)),
-                                            mu1 = rep(0, N),
+                                            mu1 = rep(1, N),
                                             mu2 = rep(1, N),
                                             rho = 0.5,
                                             mumix = 1,
@@ -507,7 +509,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = N)
     mu2 = matrix(res.bugs$mu2, nrow = N)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    rho = as.numeric(res.bugs$rho)
     mumix = matrix(res.bugs$mumix, nrow = 1)
     muprec = matrix(res.bugs$muprec, nrow = 1)
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)

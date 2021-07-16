@@ -4,6 +4,7 @@ library(rjags)
 library(gtools)
 library(mvtnorm)
 library(pbivnorm)
+library(xtable)
 
 rm(list = ls())
 
@@ -13,23 +14,23 @@ ninter = 22
 n1 = 11
 N = 4
 C = 3
-M = 1
+M = 3
 n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
 
 epsilon_p = 0.2
 epsilon_a = 0.2
-epsilon_1 = 0
-epsilon_2 = 0 ## buffer for the first stage
+epsilon_1 = 0.05
+epsilon_2 = 0.05 ## buffer for the first stage
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 a0 = c(0.15, 0.15, 0.15, 0.15) ## null activity level
 rho0 = 0.75
 alpha = 0.026
 reject_rate = 1 - alpha ## For hypothesis testing
 
-prob = c(0.15, 0.15, 0.15, 0.45) ## true p
-acti = c(0.15, 0.15, 0.15, 0.45)  ## true activity
+prob = c(0.15, 0.15, 0.15, 0.15) ## true p
+acti = c(0.15, 0.15, 0.15, 0.15)  ## true activity
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = qnorm(acti) - qnorm(a0)
 cluster = c(1, 1, 1, 3) ## true cluster structure
@@ -61,40 +62,53 @@ for (m in 1:M) {
   }
   
   ## Estimate correlation as preliminary analysis
-  cor_est = get_cor(response, activity, N, n1, n.adapt, n.burn, n.iter)
+  res = get_cor(response, activity, N, n1, n.adapt, n.burn, n.iter)
+  cor_est = res$rho
+  
+  ## Interim stage with only one outcome
   index = NULL
-  prob_rec = prob_est = NULL 
-  acti_rec = acti_est = NULL
+  prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
+  acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL
+  
+  bayes_cluster = NULL
+  activity_s1 = activity[, 1:n1]
+  for (i in 1:nrow(s1_cluster)) {
+    group = s1_cluster[i, ]
+    res = post_s1_acti(activity_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
+    bayes_cluster = c(bayes_cluster, res$factor)
+    this_acti = pnorm(0, mean = qnorm(a0) + res$mu2_rec, sd = 1, lower.tail = FALSE)
+    acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
+    acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > a0) > reject_rate))
+    acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 1 - alpha / 2))
+    acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, alpha / 2))
+  }
+  index2 = which.max(bayes_cluster)
+  reject_acti[, m] = acti_rec[index2, ]
+  post_acti_all[, m] = acti_est[index2, ]
+  post_acti_upper_all[, m] = acti_upper_rec[index2, ]
+  post_acti_lower_all[, m] = acti_lower_rec[index2, ]
+  
+  bayes_cluster = NULL
+  response_s1 = response[, 1:n1]
+  for (i in 1:nrow(s1_cluster)) {
+    group = s1_cluster[i, ]
+    res = post_s1_resp(response_s1, n1, group, cutoff_int1, n.adapt, n.burn, n.iter)
+    bayes_cluster = c(bayes_cluster, res$factor)
+    this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
+    prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
+    prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
+    prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 1 - alpha / 2))
+    prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, alpha / 2))
+  }
+  index1 = which.max(bayes_cluster)
+  reject_prob[, m] = prob_rec[index1, ]
+  post_prob_all[, m] = prob_est[index1, ]
+  post_prob_upper_all[, m] = prob_upper_rec[index1, ]
+  post_prob_lower_all[, m] = prob_lower_rec[index1, ]
   if (mean(cor_est > 0.5) > 0.9) {
-    ## stage 1 with only activity
-    bayes_cluster = NULL
-    activity_s1 = activity[, 1:n1]
-    for (i in 1:nrow(s1_cluster)) {
-      group = s1_cluster[i, ]
-      res = post_s1_acti(activity_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
-      bayes_cluster = c(bayes_cluster, res$factor)
-      this_acti = pnorm(0, mean = qnorm(a0) + res$mu2_rec, sd = 1, lower.tail = FALSE)
-      acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
-      acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > a0) > reject_rate))
-    }
-    index = which.max(bayes_cluster)
-    reject_acti[, m] = acti_rec[index, ]
-    post_acti_all[, m] = acti_est[index, ]
+    index = index2
   } else {
-    ## stage 1 with only response
-    bayes_cluster = NULL
-    response_s1 = response[, 1:n1]
-    for (i in 1:nrow(s1_cluster)) {
-      group = s1_cluster[i, ]
-      res = post_s1_resp(response_s1, n1, group, cutoff_int1, n.adapt, n.burn, n.iter)
-      bayes_cluster = c(bayes_cluster, res$factor)
-      this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
-      prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
-      prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
-    }
-    index = which.max(bayes_cluster)
-    reject_prob[, m] = prob_rec[index, ]
-    post_prob_all[, m] = prob_est[index, ]
+    index = index1
   }
   if (sum(s1_cluster[index, ] == 1) == 4) {
     post_cluster_all[, m] = c(1, 1, 1, 1)
@@ -102,7 +116,6 @@ for (m in 1:M) {
     setTxtProgressBar(pb, m / M)
     next
   }
-  
   
   ## stage 2 with both response and activity
   arm_remain = which(s1_cluster[index, ] == 2)
@@ -145,10 +158,9 @@ for (m in 1:M) {
 }
 
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/binary")
-cluster = c(1, 1, 1, 3)
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/binary/mix")
 prob = c(0.15, 0.15, 0.15, 0.45) ## true p
-acti = c(3, 3, 3, 4)  ## true activity
+acti = c(0.15, 0.15, 0.45, 0.45)  ## true activity
 post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
 early_stop = as.matrix(read.csv("early.csv")[, -1])
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
@@ -164,17 +176,19 @@ reject_acti = as.matrix(read.csv("rej_acti.csv")[, -1])
 
 
 ## report
-report = cbind(cluster,
-               rowMeans(post_cluster_all == 1),
-               rowMeans(post_cluster_all == 2),
-               rowMeans(post_cluster_all == 3),
-               rowMeans(early_stop), 
+report = cbind(rowMeans(post_cluster_all == 1) * 100,
+               rowMeans(post_cluster_all == 2) * 100,
+               rowMeans(post_cluster_all == 3) * 100,
+               rowMeans(early_stop) * 100, 
                rowMeans(post_prob_all, na.rm = TRUE),
-               rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE),
+               rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE) * 100,
                rowMeans(post_acti_all, na.rm = TRUE),
-               rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE),
-               rowMeans(reject_prob | reject_acti, na.rm = TRUE),
-               rowMeans(reject_prob & reject_acti, na.rm = TRUE))
+               rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
+               rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
+               rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
 report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3", "early", "p_hat", "p_CI", "a_hat", "a_CI", "weak", "strong")
+colnames(report) = c("C1", "C2", "C3", "early", "p_hat", "p_CI", "a_hat", "a_CI", "weak", "strong")
 report
+
+
+xtable(report, digits = c(1, rep(1, 4), 2, 1, 2, 1, 1, 1))
