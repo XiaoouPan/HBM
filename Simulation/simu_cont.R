@@ -22,8 +22,8 @@ n.iter = 5000
 
 epsilon_p = 0.2
 epsilon_mu = 0.75
-epsilon_1 = 0
-epsilon_2 = 0  ## buffer for the first stage
+epsilon_1 = 0.05
+epsilon_2 = 0.2  ## buffer for the first stage
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 mu0 = c(3, 3, 3, 3) ## null activity level
 rho0 = 0.75
@@ -62,41 +62,54 @@ for (m in 1:M) {
   }
   
   ## Estimate correlation as preliminary analysis
-  cor_est = get_cor(response, activity, N, n1, n.adapt, n.burn, n.iter)
+  cor_est = get_cor(response[, 1:n1], activity[, 1:n1], N, n1, n.adapt, n.burn, n.iter)
+  
+  ## Interim stage with only one outcome
   index = NULL
-  prob_rec = prob_est = NULL 
-  acti_rec = acti_est = NULL
-  if (mean(cor_est > 0.5) > 0.9) {
-    ## stage 1 with only activity
-    bayes_cluster = NULL
-    activity_s1 = activity[, 1:n1]
-    for (i in 1:nrow(s1_cluster)) {
-      group = s1_cluster[i, ]
-      res = post_s1_acti(activity_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
-      bayes_cluster = c(bayes_cluster, res$factor)
-      this_acti = mu0 + res$mu2_rec
-      acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
-      acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > mu0) > reject_rate))
-    }
-    index = which.max(bayes_cluster)
-    reject_acti[, m] = acti_rec[index, ]
-    post_acti_all[, m] = acti_est[index, ]
-  } else {
-    ## stage 1 with only response
-    bayes_cluster = NULL
-    response_s1 = response[, 1:n1]
-    for (i in 1:nrow(s1_cluster)) {
-      group = s1_cluster[i, ]
-      res = post_s1_resp(response_s1, n1, group, cutoff_int1, n.adapt, n.burn, n.iter)
-      bayes_cluster = c(bayes_cluster, res$factor)
-      this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
-      prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
-      prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
-    }
-    index = which.max(bayes_cluster)
-    reject_prob[, m] = prob_rec[index, ]
-    post_prob_all[, m] = prob_est[index, ]
+  prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
+  acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL
+  
+  bayes_cluster = NULL
+  activity_s1 = activity[, 1:n1]
+  for (i in 1:nrow(s1_cluster)) {
+    group = s1_cluster[i, ]
+    res = post_s1_acti(activity_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
+    bayes_cluster = c(bayes_cluster, res$factor)
+    this_acti = mu0 + res$mu2_rec
+    acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
+    acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > mu0) > reject_rate))
+    acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 1 - alpha / 2))
+    acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, alpha / 2))
   }
+  index2 = which.max(bayes_cluster)
+  reject_acti[, m] = acti_rec[index2, ]
+  post_acti_all[, m] = acti_est[index2, ]
+  post_acti_upper_all[, m] = acti_upper_rec[index2, ]
+  post_acti_lower_all[, m] = acti_lower_rec[index2, ]
+  
+  bayes_cluster = NULL
+  response_s1 = response[, 1:n1]
+  for (i in 1:nrow(s1_cluster)) {
+    group = s1_cluster[i, ]
+    res = post_s1_resp(response_s1, n1, group, cutoff_int1, n.adapt, n.burn, n.iter)
+    bayes_cluster = c(bayes_cluster, res$factor)
+    this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
+    prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
+    prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
+    prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 1 - alpha / 2))
+    prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, alpha / 2))
+  }
+  index1 = which.max(bayes_cluster)
+  reject_prob[, m] = prob_rec[index1, ]
+  post_prob_all[, m] = prob_est[index1, ]
+  post_prob_upper_all[, m] = prob_upper_rec[index1, ]
+  post_prob_lower_all[, m] = prob_lower_rec[index1, ]
+  if (mean(cor_est > 0.5) > 0.9) {
+    index = index2
+  } else {
+    index = index1
+  }
+  
   if (sum(s1_cluster[index, ] == 1) == 4) {
     post_cluster_all[, m] = c(1, 1, 1, 1)
     early_stop[, m] = c(1, 1, 1, 1)
