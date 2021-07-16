@@ -5,6 +5,7 @@ library(gtools)
 library(mvtnorm)
 library(tikzDevice)
 library(ggplot2)
+library(xtable)
 
 rm(list = ls())
 
@@ -14,7 +15,7 @@ ninter = 22
 n1 = 11
 N = 4
 C = 3
-M = 5
+M = 500
 n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
@@ -86,7 +87,7 @@ for (m in 1:M) {
     response_s1 = response[, 1:n1]
     for (i in 1:nrow(s1_cluster)) {
       group = s1_cluster[i, ]
-      res = post_s1_resp(response_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
+      res = post_s1_resp(response_s1, n1, group, cutoff_int1, n.adapt, n.burn, n.iter)
       bayes_cluster = c(bayes_cluster, res$factor)
       this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
       prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
@@ -144,10 +145,9 @@ for (m in 1:M) {
 }
 
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous")
-cluster = c(1, 1, 1, 3)
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous/mix")
 prob = c(0.15, 0.15, 0.15, 0.45) ## true p
-acti = c(3, 3, 3, 4)  ## true activity
+acti = c(3, 3, 4, 4)  ## true activity
 post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
 early_stop = as.matrix(read.csv("early.csv")[, -1])
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
@@ -161,21 +161,20 @@ reject_acti = as.matrix(read.csv("rej_acti.csv")[, -1])
 
 
 ## report
-report = cbind(cluster,
-               rowMeans(post_cluster_all == 1),
-               rowMeans(post_cluster_all == 2),
-               rowMeans(post_cluster_all == 3),
-               rowMeans(early_stop), 
+report = cbind(rowMeans(post_cluster_all == 1) * 100,
+               rowMeans(post_cluster_all == 2) * 100,
+               rowMeans(post_cluster_all == 3) * 100,
+               rowMeans(early_stop) * 100, 
                rowMeans(post_prob_all, na.rm = TRUE),
-               rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE),
+               rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE) * 100,
                rowMeans(post_acti_all, na.rm = TRUE),
-               rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE),
-               rowMeans(reject_prob | reject_acti, na.rm = TRUE),
-               rowMeans(reject_prob & reject_acti, na.rm = TRUE))
+               rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
+               rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
+               rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
 report = as.data.frame(report)
-colnames(report) = c("cluster", "C1", "C2", "C3", "early", "p_hat", "p_CI", "mu_hat", "mu_CI", "weak", "strong")
+colnames(report) = c("C1", "C2", "C3", "early", "p_hat", "p_CI", "mu_hat", "mu_CI", "weak", "strong")
 report
 
 
-
+xtable(report, digits = c(1, rep(1, 4), 2, 1, 2, 1, 1, 1))
 

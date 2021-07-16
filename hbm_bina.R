@@ -1,12 +1,13 @@
 #### Estimate the correlation as our first step
-get_cor = function(response, activity, N, ninter, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
-  dat = list(response = response,
-             activity = activity,
+get_cor = function(response, activity, N, n1, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+  dat = list(response = response[, 1:n1],
+             activity = activity[, 1:n1],
              N = N,
-             ninter = ninter)
+             n1 = n1)
   thismodel = try(jags.model(file = "bugs/binary/cor.txt", 
                              data = dat, 
-                             inits = list(mu1 = rep(0, N),
+                             inits = list(Z = array(c(dat$response, dat$activity), dim = c(dat$N, dat$n1, 2)),
+                                          mu1 = rep(0, N),
                                           mu2 = rep(0, N),
                                           rho = 0.5),
                              n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
@@ -181,7 +182,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu2", "mumix2", "muprec2"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu2 = matrix(res.bugs$mu1, nrow = N)
+    mu2 = matrix(res.bugs$mu2, nrow = N)
     mu2_rec[ind, ] = mu2
     mumix2 = matrix(res.bugs$mumix2, nrow = 1)
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
@@ -535,5 +536,4 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
   }
   return (list("factor" = rst, "mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec))
 }
-
 
