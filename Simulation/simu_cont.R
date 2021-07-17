@@ -158,8 +158,8 @@ for (m in 1:M) {
 }
 
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous/mix")
-prob = c(0.15, 0.15, 0.15, 0.45) ## true p
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous/2act")
+prob = c(0.15, 0.15, 0.45, 0.45) ## true p
 acti = c(3, 3, 4, 4)  ## true activity
 post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
 early_stop = as.matrix(read.csv("early.csv")[, -1])
