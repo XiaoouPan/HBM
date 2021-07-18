@@ -15,9 +15,7 @@ get_cor = function(response, activity, N, n1, n.adapt = 1000, n.burn = 1000, n.i
   res.bugs = try(jags.samples(thismodel, 
                               variable.names = c("mu1", "mu2", "rho"),
                               n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-  mu1 = matrix(res.bugs$mu1, nrow = N)
-  mu2 = matrix(res.bugs$mu2, nrow = N)
-  return (list("rho" = as.vector(res.bugs$rho), "mu1" = mu1, "mu2" = mu2))
+  return (as.vector(res.bugs$rho))
 }
 
 #### MCMC Sampling and likelihood for the interim stage, using response (sum of response)
