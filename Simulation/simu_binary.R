@@ -17,6 +17,7 @@ C = 3
 M = 3
 n.adapt = 2000
 n.burn = 2000
+n.adapt.c3 = 2000
 n.iter = 5000
 
 epsilon_p = 0.2
@@ -124,7 +125,7 @@ for (m in 1:M) {
   acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
     group = all_cluster[i, ]
-    res = post(response_remain, activity_remain, ninter, group, cutoff, cutoff2, n.adapt, n.burn, n.iter)
+    res = post(response_remain, activity_remain, ninter, group, cutoff, cutoff2, n.adapt.c3, n.burn, n.iter)
     this_prob = pnorm(0, mean = qnorm(p0[arm_remain]) + res$mu1_rec, sd = 1, lower.tail = FALSE)
     prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
     prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0[arm_remain]) > reject_rate))
