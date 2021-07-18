@@ -10,10 +10,11 @@ model {
     mu1[i] ~ dnorm(mumix, muprec)T(, cutoff)
     mu2[i] ~ dnorm(mumix2, muprec2)T(cutoff2, )
   }
-  prec[1, 1] <- 1.0 / (1 - rho * rho)
-  prec[1, 2] <- -rho / (1 - rho * rho)
-  prec[2, 1] <- -rho / (1 - rho * rho)
-  prec[2, 2] <- 1.0 / (1 - rho * rho)
+  prec[1:2, 1:2] <- inverse(cov[1:2, 1:2])
+  cov[1, 1] <- 1
+  cov[1, 2] <- rho
+  cov[2, 1] <- rho
+  cov[2, 2] <- 1
   rho ~ dunif(-1, 1)
   mumix ~ dnorm(0, 0.00001)T(, cutoff)
   muprec ~ dgamma(0.001, 0.001)

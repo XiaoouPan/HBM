@@ -1,5 +1,5 @@
 #### Estimate the correlation as our first step
-get_cor = function(response, activity, N, n1, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+get_cor = function(response, activity, N, n1, n.adapt = 2000, n.burn = 2000, n.iter = 5000) {
   dat = list(response = response,
              activity = activity,
              N = N,
@@ -27,7 +27,7 @@ get_cor = function(response, activity, N, n1, n.adapt = 1000, n.burn = 1000, n.i
 }
 
 #### MCMC Sampling and likelihood for the interim stage, using response (sum of response)
-post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 2000, n.burn = 2000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
   mu1_rec = matrix(0, length(group), n.iter)
   
@@ -147,7 +147,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
 
 
 #### MCMC Sampling and likelihood for the interim stage, using activity (sum of activity)
-post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 2000, n.burn = 2000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
   mu2_rec = matrix(0, length(group), n.iter)
   
@@ -268,7 +268,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
 
 
 #### MCMC Sampling and calculate likelihood for the final stage, the mian function
-post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 2000, n.burn = 2000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
   mu1_rec = mu2_rec = matrix(0, length(group), n.iter)
   
@@ -281,6 +281,11 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                ninter = ninter,
                cutoff = cutoff,
                cutoff2 = cutoff2)
+    Z = mvrnorm(ninter, c(0, 0), matrix(c(1, 0.5, 0.5, 1), 2, 2))
+    for (j in 1:ninter) {
+      Z[j, 1] = ifelse(dat$response[j] == 1, abs(Z[j, 1]), -abs(Z[j, 1]))
+      Z[j, 2] = ifelse(dat$activity[j] == 1, abs(Z[j, 2]), -abs(Z[j, 2]))
+    }
     thismodel = try(jags.model(file = "bugs/binary/c1_uni.txt", 
                                data = dat, 
                                inits = list(Z = Z,
@@ -332,11 +337,11 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                                             mu1 = rep(0, N),
                                             mu2 = rep(0, N),
                                             rho = 0.5,
-                                            mumix = 0,
+                                            mumix = 0.,
                                             muprec = 1,
                                             mumix2 = 0,
                                             muprec2 = 1),
-                               n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+                               n.adapt = 1000, quiet = TRUE), silent = TRUE)
     update(thismodel, n.burn, progress.bar = "none") 
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu1", "mu2", "rho", "mumix", "muprec", "mumix2", "muprec2"),
@@ -380,6 +385,11 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                ninter = ninter,
                cutoff = cutoff,
                cutoff2 = cutoff2)
+    Z = mvrnorm(ninter, c(0, 1), matrix(c(1, 0.5, 0.5, 1), 2, 2))
+    for (j in 1:ninter) {
+      Z[j, 1] = ifelse(dat$response[j] == 1, abs(Z[j, 1]), -abs(Z[j, 1]))
+      Z[j, 2] = ifelse(dat$activity[j] == 1, abs(Z[j, 2]), -abs(Z[j, 2]))
+    }
     thismodel = try(jags.model(file = "bugs/binary/c2_uni.txt", 
                                data = dat, 
                                inits = list(Z = Z,
@@ -478,6 +488,11 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                activity = activity[ind, ],
                ninter = ninter,
                cutoff = cutoff)
+    Z = mvrnorm(ninter, c(1, 1), matrix(c(1, 0.5, 0.5, 1), 2, 2))
+    for (j in 1:ninter) {
+      Z[j, 1] = ifelse(dat$response[j] == 1, abs(Z[j, 1]), -abs(Z[j, 1]))
+      Z[j, 2] = ifelse(dat$activity[j] == 1, abs(Z[j, 2]), -abs(Z[j, 2]))
+    }
     thismodel = try(jags.model(file = "bugs/binary/c3_uni.txt", 
                                data = dat, 
                                inits = list(Z = Z,

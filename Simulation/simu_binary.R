@@ -15,8 +15,8 @@ n1 = 11
 N = 4
 C = 3
 M = 3
-n.adapt = 1000
-n.burn = 1000
+n.adapt = 2000
+n.burn = 2000
 n.iter = 5000
 
 epsilon_p = 0.2
@@ -33,7 +33,7 @@ prob = c(0.15, 0.15, 0.15, 0.15) ## true p
 acti = c(0.15, 0.15, 0.15, 0.15)  ## true activity
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = qnorm(acti) - qnorm(a0)
-cluster = c(1, 1, 1, 3) ## true cluster structure
+cluster = c(1, 1, 1, 1) ## true cluster structure
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
@@ -62,11 +62,9 @@ for (m in 1:M) {
   }
   
   ## Estimate correlation as preliminary analysis
-  res = get_cor(response, activity, N, n1, n.adapt, n.burn, n.iter)
-  cor_est = res$rho
+  cor_est = get_cor(response[, 1:n1], activity[, 1:n1], N, n1, n.adapt, n.burn, n.iter)
   
   ## Interim stage with only one outcome
-  index = NULL
   prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
   acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL
   
@@ -105,11 +103,8 @@ for (m in 1:M) {
   post_prob_all[, m] = prob_est[index1, ]
   post_prob_upper_all[, m] = prob_upper_rec[index1, ]
   post_prob_lower_all[, m] = prob_lower_rec[index1, ]
-  if (mean(cor_est > 0.5) > 0.9) {
-    index = index2
-  } else {
-    index = index1
-  }
+  index = ifelse(mean(cor_est > 0.5) > 0.9, index2, index1)
+  
   if (sum(s1_cluster[index, ] == 1) == 4) {
     post_cluster_all[, m] = c(1, 1, 1, 1)
     early_stop[, m] = c(1, 1, 1, 1)
