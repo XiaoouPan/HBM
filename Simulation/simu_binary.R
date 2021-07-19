@@ -15,15 +15,15 @@ n1 = 11
 N = 4
 C = 3
 M = 3
-n.adapt = 2000
-n.burn = 2000
-n.adapt.c3 = 2000
+n.adapt = 1000
+n.burn = 1000
+n.adapt.c3 = 1000
 n.iter = 5000
 
 epsilon_p = 0.2
 epsilon_a = 0.2
-epsilon_1 = 0.05
-epsilon_2 = 0.05 ## buffer for the first stage
+epsilon_1 = 0.02
+epsilon_2 = 0.02 ## buffer for the first stage
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 a0 = c(0.15, 0.15, 0.15, 0.15) ## null activity level
 rho0 = 0.75
@@ -66,8 +66,8 @@ for (m in 1:M) {
   cor_est = get_cor(response[, 1:n1], activity[, 1:n1], N, n1, n.adapt, n.burn, n.iter)
   
   ## Interim stage with only one outcome
-  prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
-  acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL
+  prob_est = prob_upper_rec = prob_lower_rec = NULL 
+  acti_est = acti_upper_rec = acti_lower_rec = NULL
   
   bayes_cluster = NULL
   activity_s1 = activity[, 1:n1]
@@ -77,12 +77,10 @@ for (m in 1:M) {
     bayes_cluster = c(bayes_cluster, res$factor)
     this_acti = pnorm(0, mean = qnorm(a0) + res$mu2_rec, sd = 1, lower.tail = FALSE)
     acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
-    acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > a0) > reject_rate))
     acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 1 - alpha / 2))
     acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, alpha / 2))
   }
   index2 = which.max(bayes_cluster)
-  reject_acti[, m] = acti_rec[index2, ]
   post_acti_all[, m] = acti_est[index2, ]
   post_acti_upper_all[, m] = acti_upper_rec[index2, ]
   post_acti_lower_all[, m] = acti_lower_rec[index2, ]
@@ -95,12 +93,10 @@ for (m in 1:M) {
     bayes_cluster = c(bayes_cluster, res$factor)
     this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
     prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
-    prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
     prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 1 - alpha / 2))
     prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, alpha / 2))
   }
   index1 = which.max(bayes_cluster)
-  reject_prob[, m] = prob_rec[index1, ]
   post_prob_all[, m] = prob_est[index1, ]
   post_prob_upper_all[, m] = prob_upper_rec[index1, ]
   post_prob_lower_all[, m] = prob_lower_rec[index1, ]
@@ -177,13 +173,17 @@ report = cbind(rowMeans(post_cluster_all == 1) * 100,
                rowMeans(post_cluster_all == 3) * 100,
                rowMeans(early_stop) * 100, 
                rowMeans(post_prob_all, na.rm = TRUE),
+               rowMeans(post_prob_lower_all, na.rm = TRUE),
+               rowMeans(post_prob_upper_all, na.rm = TRUE),
                rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE) * 100,
                rowMeans(post_acti_all, na.rm = TRUE),
+               rowMeans(post_acti_lower_all, na.rm = TRUE),
+               rowMeans(post_acti_upper_all, na.rm = TRUE),
                rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
                rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
                rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
 report = as.data.frame(report)
-colnames(report) = c("C1", "C2", "C3", "early", "p_hat", "p_CI", "a_hat", "a_CI", "weak", "strong")
+colnames(report) = c("C1", "C2", "C3", "early", "p_hat", "CI_l", "CI_u", "p_CI", "mu_hat", "CI_l", "CI_u", "mu_CI", "weak", "strong")
 report
 
 
