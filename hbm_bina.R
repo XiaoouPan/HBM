@@ -313,7 +313,13 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 20
     s01 = sum(response[ind, ] == 0 & activity[ind, ] == 1)
     s10 = sum(response[ind, ] == 1 & activity[ind, ] == 0)
     s11 = sum(response[ind, ] == 1 & activity[ind, ] == 1)
-    rst = rst + s00 * mean(log(p00), na.rm = T) + s01 * mean(log(p01), na.rm = T) + s10 * mean(log(p10), na.rm = T) + s11 * mean(log(p11), na.rm = T)
+    log.p00 = log(p00)
+    log.p01 = log(p01)
+    log.p10 = log(p10)
+    log.p11 = log(p11)
+    ind.fin = which(is.finite(log.p00) & is.finite(log.p01) & is.finite(log.p10) & is.finite(log.p11))
+    rst = rst + s00 * mean(log.p00[ind.fin], na.rm = T) + s01 * mean(log.p01[ind.fin], na.rm = T) + 
+                s10 * mean(log.p10[ind.fin], na.rm = T) + s11 * mean(log.p11[ind.fin], na.rm = T)
   } else if (N >= 2) {
     activity_sub = activity[ind, ]
     response_sub = response[ind, ]
@@ -372,7 +378,13 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 20
       s01 = sum(response_sub[n, ] == 0 & activity_sub[n, ] == 1)
       s10 = sum(response_sub[n, ] == 1 & activity_sub[n, ] == 0)
       s11 = sum(response_sub[n, ] == 1 & activity_sub[n, ] == 1)
-      rst = rst + s00 * mean(log(p00), na.rm = T) + s01 * mean(log(p01), na.rm = T) + s10 * mean(log(p10), na.rm = T) + s11 * mean(log(p11), na.rm = T)
+      log.p00 = log(p00)
+      log.p01 = log(p01)
+      log.p10 = log(p10)
+      log.p11 = log(p11)
+      ind.fin = which(is.finite(log.p00) & is.finite(log.p01) & is.finite(log.p10) & is.finite(log.p11))
+      rst = rst + s00 * mean(log.p00[ind.fin], na.rm = T) + s01 * mean(log.p01[ind.fin], na.rm = T) + 
+            s10 * mean(log.p10[ind.fin], na.rm = T) + s11 * mean(log.p11[ind.fin], na.rm = T)
     }
   }
   
@@ -417,7 +429,13 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 20
     s01 = sum(response[ind, ] == 0 & activity[ind, ] == 1)
     s10 = sum(response[ind, ] == 1 & activity[ind, ] == 0)
     s11 = sum(response[ind, ] == 1 & activity[ind, ] == 1)
-    rst = rst + s00 * mean(log(p00), na.rm = T) + s01 * mean(log(p01), na.rm = T) + s10 * mean(log(p10), na.rm = T) + s11 * mean(log(p11), na.rm = T)
+    log.p00 = log(p00)
+    log.p01 = log(p01)
+    log.p10 = log(p10)
+    log.p11 = log(p11)
+    ind.fin = which(is.finite(log.p00) & is.finite(log.p01) & is.finite(log.p10) & is.finite(log.p11))
+    rst = rst + s00 * mean(log.p00[ind.fin], na.rm = T) + s01 * mean(log.p01[ind.fin], na.rm = T) + 
+          s10 * mean(log.p10[ind.fin], na.rm = T) + s11 * mean(log.p11[ind.fin], na.rm = T)
   } else if (N >= 2) {
     activity_sub = activity[ind, ]
     response_sub = response[ind, ]
@@ -476,7 +494,13 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 20
       s01 = sum(response_sub[n, ] == 0 & activity_sub[n, ] == 1)
       s10 = sum(response_sub[n, ] == 1 & activity_sub[n, ] == 0)
       s11 = sum(response_sub[n, ] == 1 & activity_sub[n, ] == 1)
-      rst = rst + s00 * mean(log(p00), na.rm = T) + s01 * mean(log(p01), na.rm = T) + s10 * mean(log(p10), na.rm = T) + s11 * mean(log(p11), na.rm = T)
+      log.p00 = log(p00)
+      log.p01 = log(p01)
+      log.p10 = log(p10)
+      log.p11 = log(p11)
+      ind.fin = which(is.finite(log.p00) & is.finite(log.p01) & is.finite(log.p10) & is.finite(log.p11))
+      rst = rst + s00 * mean(log.p00[ind.fin], na.rm = T) + s01 * mean(log.p01[ind.fin], na.rm = T) + 
+            s10 * mean(log.p10[ind.fin], na.rm = T) + s11 * mean(log.p11[ind.fin], na.rm = T)
     }
   }
   
@@ -520,7 +544,13 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 20
     s01 = sum(response[ind, ] == 0 & activity[ind, ] == 1)
     s10 = sum(response[ind, ] == 1 & activity[ind, ] == 0)
     s11 = sum(response[ind, ] == 1 & activity[ind, ] == 1)
-    rst = rst + s00 * mean(log(p00), na.rm = T) + s01 * mean(log(p01), na.rm = T) + s10 * mean(log(p10), na.rm = T) + s11 * mean(log(p11), na.rm = T)
+    log.p00 = log(p00)
+    log.p01 = log(p01)
+    log.p10 = log(p10)
+    log.p11 = log(p11)
+    ind.fin = which(is.finite(log.p00) & is.finite(log.p01) & is.finite(log.p10) & is.finite(log.p11))
+    rst = rst + s00 * mean(log.p00[ind.fin], na.rm = T) + s01 * mean(log.p01[ind.fin], na.rm = T) + 
+          s10 * mean(log.p10[ind.fin], na.rm = T) + s11 * mean(log.p11[ind.fin], na.rm = T)
   } else if (N >= 2) {
     activity_sub = activity[ind, ]
     response_sub = response[ind, ]
@@ -578,7 +608,13 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 20
       s01 = sum(response_sub[n, ] == 0 & activity_sub[n, ] == 1)
       s10 = sum(response_sub[n, ] == 1 & activity_sub[n, ] == 0)
       s11 = sum(response_sub[n, ] == 1 & activity_sub[n, ] == 1)
-      rst = rst + s00 * mean(log(p00), na.rm = T) + s01 * mean(log(p01), na.rm = T) + s10 * mean(log(p10), na.rm = T) + s11 * mean(log(p11), na.rm = T)
+      log.p00 = log(p00)
+      log.p01 = log(p01)
+      log.p10 = log(p10)
+      log.p11 = log(p11)
+      ind.fin = which(is.finite(log.p00) & is.finite(log.p01) & is.finite(log.p10) & is.finite(log.p11))
+      rst = rst + s00 * mean(log.p00[ind.fin], na.rm = T) + s01 * mean(log.p01[ind.fin], na.rm = T) + 
+            s10 * mean(log.p10[ind.fin], na.rm = T) + s11 * mean(log.p11[ind.fin], na.rm = T)
     }
   }
   return (list("factor" = rst, "mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec))

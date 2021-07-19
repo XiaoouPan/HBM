@@ -14,7 +14,7 @@ ninter = 22
 n1 = 11
 N = 4
 C = 3
-M = 3
+M = 500
 n.adapt = 1000
 n.burn = 1000
 n.adapt.c3 = 1000
@@ -30,11 +30,11 @@ rho0 = 0.75
 alpha = 0.026
 reject_rate = 1 - alpha ## For hypothesis testing
 
-prob = c(0.15, 0.15, 0.15, 0.15) ## true p
-acti = c(0.15, 0.15, 0.15, 0.15)  ## true activity
+prob = c(0.15, 0.15, 0.15, 0.45) ## true p
+acti = c(0.15, 0.15, 0.45, 0.45)  ## true activity
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = qnorm(acti) - qnorm(a0)
-cluster = c(1, 1, 1, 1) ## true cluster structure
+cluster = c(1, 1, 2, 3) ## true cluster structure
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
