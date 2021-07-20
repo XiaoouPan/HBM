@@ -37,8 +37,8 @@ activity = matrix(0, N, ninter)
 Z = matrix(0, ninter, 2) ## underlying bivariate normal, one of them is unobservable
 Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 cutoff = qnorm(p0[1] + epsilon_p) - qnorm(p0[1])
-weak == matrix(0, 4, 5)
-strong == matrix(0, 4, 5)
+weak = matrix(0, 4, 5)
+strong = matrix(0, 4, 5)
 all_cluster = permutations(n = C, r = N, repeats.allowed = T)
 
 pb = txtProgressBar(style = 3)
@@ -68,8 +68,8 @@ for (m in 1:M) {
     index = which.max(bayes_cluster)
     reject_prob = prob_rec[index, ]
     reject_acti = acti_rec[index, ]
-    weak[, j] = reject_prob | reject_acti
-    strong[, j] = reject_prob & reject_acti
+    weak[, j] = weak[, j] + (reject_prob | reject_acti)
+    strong[, j] = strong[, j] + (reject_prob & reject_acti)
   }
   setTxtProgressBar(pb, m / M)
 }
