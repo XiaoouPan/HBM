@@ -149,9 +149,9 @@ for (m in 1:M) {
 }
 
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous/mode")
-prob = c(0.15, 0.15, 0.15, 0.15) ## true p
-acti = c(4, 4, 4, 4)  ## true activity
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous/0act")
+#prob = c(0.15, 0.15, 0.15, 0.45) ## true p
+#acti = c(3, 3, 4, 4)  ## true activity
 post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
 early_stop = as.matrix(read.csv("early.csv")[, -1])
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
@@ -163,15 +163,6 @@ post_acti_upper_all = as.matrix(read.csv("acti_upper.csv")[, -1])
 reject_prob = as.matrix(read.csv("rej_prob.csv")[, -1])
 reject_acti = as.matrix(read.csv("rej_acti.csv")[, -1])
 
-for (i in 1:4) {
-  for (j in 1:500) {
-    if (early_stop[i, j] == 1) {
-      reject_prob[i, j] = NA
-      reject_acti[i, j] = NA
-    }
-  }
-}
-
 
 
 ## report
@@ -182,17 +173,17 @@ report = cbind(rowMeans(post_cluster_all == 1) * 100,
                rowMeans(post_prob_all, na.rm = TRUE),
                rowMeans(post_prob_lower_all, na.rm = TRUE),
                rowMeans(post_prob_upper_all, na.rm = TRUE),
-               rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE) * 100,
+               #rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE) * 100,
                rowMeans(post_acti_all, na.rm = TRUE),
                rowMeans(post_acti_lower_all, na.rm = TRUE),
                rowMeans(post_acti_upper_all, na.rm = TRUE),
-               rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
+               #rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
                rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
                rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
 report = as.data.frame(report)
-colnames(report) = c("C1", "C2", "C3", "early", "p_hat", "CI_l", "CI_u", "p_CI", "mu_hat", "CI_l", "CI_u", "mu_CI", "weak", "strong")
+colnames(report) = c("C1", "C2", "C3", "early", "p_hat", "CI_l", "CI_u", "mu_hat", "CI_l", "CI_u", "weak", "strong")
 report
 
 
-xtable(report, digits = c(1, rep(1, 4), 2, 1, 2, 1, 1, 1))
+xtable(report, digits = c(1, rep(1, 4), rep(2, 6), 1, 1))
 
