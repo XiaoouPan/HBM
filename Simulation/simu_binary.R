@@ -4,6 +4,8 @@ library(rjags)
 library(gtools)
 library(mvtnorm)
 library(pbivnorm)
+library(tikzDevice)
+library(ggplot2)
 library(xtable)
 
 rm(list = ls())
@@ -150,7 +152,7 @@ for (m in 1:M) {
 }
 
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/binary/mix")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/binary/mode")
 #prob = c(0.15, 0.15, 0.15, 0.45) ## true p
 #acti = c(0.15, 0.15, 0.45, 0.45)  ## true activity
 post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
