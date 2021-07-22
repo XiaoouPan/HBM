@@ -149,7 +149,7 @@ for (m in 1:M) {
 }
 
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous/0act")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous/mix")
 #prob = c(0.15, 0.15, 0.15, 0.45) ## true p
 #acti = c(3, 3, 4, 4)  ## true activity
 post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
@@ -186,4 +186,27 @@ report
 
 
 xtable(report, digits = c(1, rep(1, 4), rep(2, 6), 1, 1))
+
+
+### Plots of estimators
+
+rst1 = c(post_prob_all[1, ], post_prob_all[2, ], post_prob_all[3, ], post_prob_all[4, ])
+rst2 = c(post_acti_all[1, ], post_acti_all[2, ], post_acti_all[3, ], post_acti_all[4, ])
+estimator = c(rep("Response", 2000), rep("Activity", 2000))
+estimator = factor(estimator, levels = c("Response", "Activity"))
+arm = rep(rep(c("Arm 1", "Arm 2", "Arm 3", "Arm 4"), each = 500), 2)
+rst = data.frame("value" = c(rst1, rst2), "estimator" = estimator, "arm" = arm)
+
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation")
+tikz("plot.tex", standAlone = TRUE, width = 5, height = 5)
+ggplot(rst, aes(x = arm, y = value, fill = estimator)) + 
+  geom_boxplot(lwd = 0.1, alpha = 1, width = 0.9, outlier.colour = "red", outlier.fill = "red", outlier.size = 2, outlier.alpha = 0) + 
+  scale_fill_brewer(palette = "Dark2") + xlab("") + ylab("Parameters estimation") + 
+  #scale_y_continuous(breaks = seq(0, 0.8, 0.2)) + 
+  ylim(0, 4.5) + 
+  theme(axis.text = element_text(size = 15), axis.title = element_text(size = 20)) +
+  theme(legend.position = "none")
+dev.off()
+tools::texi2dvi("plot.tex", pdf = T)
+
 
