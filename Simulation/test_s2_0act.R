@@ -74,8 +74,52 @@ for (m in 1:M) {
   setTxtProgressBar(pb, m / M)
 }
 
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/Test_s2/4act")
+weak = cbind(as.matrix(read.csv("weak_015.csv")[, -1]), 
+             as.matrix(read.csv("weak_018.csv")[, -1]), 
+             as.matrix(read.csv("weak_021.csv")[, -1]),
+             as.matrix(read.csv("weak_024.csv")[, -1]),
+             as.matrix(read.csv("weak_027.csv")[, -1]))
+strong = cbind(as.matrix(read.csv("strong_015.csv")[, -1]), 
+             as.matrix(read.csv("strong_018.csv")[, -1]), 
+             as.matrix(read.csv("strong_021.csv")[, -1]),
+             as.matrix(read.csv("strong_024.csv")[, -1]),
+             as.matrix(read.csv("strong_027.csv")[, -1]))
 
+## Weak
+k = 1
+rst1 = c(rep(0.15, 5), rep(0.18, 5), rep(0.21, 5), rep(0.24, 5), rep(0.27, 5))
+rst2 = rep(c(0.5, 0.6, 0.7, 0.8, 0.9), 5)
+rst3 = weak[k, ] / 50
+dat = as.data.frame(cbind(rst1, rst2, rst3))
+colnames(dat) = c("Response", "Activity", "Power")
 
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation")
+tikz("plot.tex", standAlone = TRUE, width = 5, height = 5)
+ggplot(dat, aes(x = Response, y = Activity, z = Power)) + geom_contour_filled() + 
+  xlim(0.15, 0.27) + ylim(0.5, 0.9) + 
+  scale_x_continuous(breaks = seq(0.15, 0.27, by = 0.03)) + 
+  xlab("Buffer for response") + ylab("Buffer for activity") +
+  theme(axis.text = element_text(size = 15), axis.title = element_text(size = 20))
+dev.off()
+tools::texi2dvi("plot.tex", pdf = T)
 
+### Strong
+k = 3
+rst1 = c(rep(0.15, 5), rep(0.18, 5), rep(0.21, 5), rep(0.24, 5), rep(0.27, 5))
+rst2 = rep(c(0.5, 0.6, 0.7, 0.8, 0.9), 5)
+rst3 = strong[k, ] / 50
+dat = as.data.frame(cbind(rst1, rst2, rst3))
+colnames(dat) = c("Response", "Activity", "Power")
+
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation")
+tikz("plot.tex", standAlone = TRUE, width = 5, height = 5)
+ggplot(dat, aes(x = Response, y = Activity, z = Power)) + geom_contour_filled(aes(z = Power)) + 
+  xlim(0.15, 0.27) + ylim(0.5, 0.9) + 
+  scale_x_continuous(breaks = seq(0.15, 0.27, by = 0.03)) + 
+  xlab("Buffer for response") + ylab("Buffer for activity") +
+  theme(axis.text = element_text(size = 15), axis.title = element_text(size = 20))
+dev.off()
+tools::texi2dvi("plot.tex", pdf = T)
 
 
