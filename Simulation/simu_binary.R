@@ -152,7 +152,7 @@ for (m in 1:M) {
 }
 
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/binary/mode")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/binary/4act")
 #prob = c(0.15, 0.15, 0.15, 0.45) ## true p
 #acti = c(0.15, 0.15, 0.45, 0.45)  ## true activity
 post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
@@ -166,6 +166,19 @@ post_acti_upper_all = as.matrix(read.csv("acti_upper.csv")[, -1])
 reject_prob = as.matrix(read.csv("rej_prob.csv")[, -1])
 reject_acti = as.matrix(read.csv("rej_acti.csv")[, -1])
 
+
+
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/binary/4act")
+post_cluster_all = cbind(as.matrix(read.csv("2_cluster.csv")[, 2:201]), as.matrix(read.csv("4_cluster.csv")[, 202:401]), as.matrix(read.csv("5_cluster.csv")[, 402:501]))
+early_stop = cbind(as.matrix(read.csv("2_early.csv")[, 2:201]), as.matrix(read.csv("4_early.csv")[, 202:401]), as.matrix(read.csv("5_early.csv")[, 402:501]))
+post_prob_all = cbind(as.matrix(read.csv("2_prob.csv")[, 2:201]), as.matrix(read.csv("4_prob.csv")[, 202:401]), as.matrix(read.csv("5_prob.csv")[, 402:501]))
+post_prob_lower_all = cbind(as.matrix(read.csv("2_prob_lower.csv")[, 2:201]), as.matrix(read.csv("4_prob_lower.csv")[, 202:401]), as.matrix(read.csv("5_prob_lower.csv")[, 402:501]))
+post_prob_upper_all = cbind(as.matrix(read.csv("2_prob_upper.csv")[, 2:201]), as.matrix(read.csv("4_prob_upper.csv")[, 202:401]), as.matrix(read.csv("5_prob_upper.csv")[, 402:501]))
+post_acti_all = cbind(as.matrix(read.csv("2_acti.csv")[, 2:201]), as.matrix(read.csv("4_acti.csv")[, 202:401]), as.matrix(read.csv("5_acti.csv")[, 402:501]))
+post_acti_lower_all = cbind(as.matrix(read.csv("2_acti_lower.csv")[, 2:201]), as.matrix(read.csv("4_acti_lower.csv")[, 202:401]), as.matrix(read.csv("5_acti_lower.csv")[, 402:501]))
+post_acti_upper_all = cbind(as.matrix(read.csv("2_acti_upper.csv")[, 2:201]), as.matrix(read.csv("4_acti_upper.csv")[, 202:401]), as.matrix(read.csv("5_acti_upper.csv")[, 402:501]))
+reject_prob = cbind(as.matrix(read.csv("2_rej_prob.csv")[, 2:201]), as.matrix(read.csv("4_rej_prob.csv")[, 202:401]), as.matrix(read.csv("5_rej_prob.csv")[, 402:501]))
+reject_acti = cbind(as.matrix(read.csv("2_rej_acti.csv")[, 2:201]), as.matrix(read.csv("4_rej_acti.csv")[, 202:401]), as.matrix(read.csv("5_rej_acti.csv")[, 402:501]))
 
 
 
