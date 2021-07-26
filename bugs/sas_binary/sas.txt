@@ -19,4 +19,6 @@ model {
   prec[2, 2] <- 1.0 / (1 - rho * rho)
   rho ~ dunif(-1, 1)
   cluster_ind ~ dcat(cluster_prob)
+  cluster_prob <- trans[null_ind, ]
+  null_ind ~ dcat(null_prob)
 }

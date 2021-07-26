@@ -16,8 +16,8 @@ ninter = 22
 n1 = 11
 N = 4
 M = 5
-n.adapt = 2000
-n.burn = 2000
+n.adapt = 5000
+n.burn = 5000
 n.iter = 10000
 
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
@@ -26,9 +26,8 @@ rho0 = 0.5
 alpha = 0.026
 reject_rate = 1 - alpha ## For hypothesis testing
 
-prob = c(0.15, 0.15, 0.15, 0.15) ## true p
-acti = c(0.15, 0.15, 0.15, 0.15)  ## true activity
-#cluster = c(1, 1, 1, 1) ## true cluster structure
+prob = c(0.15, 0.15, 0.45, 0.45) ## true p
+acti = c(0.15, 0.15, 0.45, 0.45)  ## true activity
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = qnorm(acti) - qnorm(a0)
 
@@ -42,12 +41,11 @@ reject_prob = reject_acti = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
 cluster = getCluster(N) ## 41 possibilities in total
-
 trans = getTrans(cluster)
 
 pb = txtProgressBar(style = 3)
 for (m in 1:M) {
-  #set.seed(m)
+  set.seed(m)
   ## Data generation
   for (i in 1:N) {
     Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
