@@ -57,13 +57,13 @@ for (m in 1:M) {
   this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
   post_prob_all[, m] = as.numeric(rowMeans(this_prob))
   reject_prob[, m] = as.numeric(rowMeans(this_prob > p0) > reject_rate)
-  post_prob_upper_all[, m] = apply(this_prob, 1, quantile, 0.975)
-  post_prob_lower_all[, m] = apply(this_prob, 1, quantile, 0.025)
+  post_prob_upper_all[, m] = apply(this_prob, 1, quantile, 1 - alpha / 2)
+  post_prob_lower_all[, m] = apply(this_prob, 1, quantile, alpha / 2)
   this_acti = pnorm(0, mean = qnorm(a0) + res$mu2_rec, sd = 1, lower.tail = FALSE)
   post_acti_all[, m] = as.numeric(rowMeans(this_acti))
   reject_acti[, m] = as.numeric(rowMeans(this_acti > a0) > reject_rate)
-  post_acti_upper_all[, m] = apply(this_acti, 1, quantile, 0.975)
-  post_acti_lower_all[, m] = apply(this_acti, 1, quantile, 0.025)
+  post_acti_upper_all[, m] = apply(this_acti, 1, quantile, 1 - alpha / 2)
+  post_acti_lower_all[, m] = apply(this_acti, 1, quantile, alpha / 2)
   
   setTxtProgressBar(pb, m / M)
 }
