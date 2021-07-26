@@ -18,6 +18,54 @@ getCluster = function(num = 4) {
   return (as.matrix(rst))
 }
 
+## This function only works when we have 4 groups
+getTrans = function(cluster) {
+  trans = matrix(0, 41, 41)
+  for (i in 1:41) {
+    cur = cluster[i, ]
+    uni = unique(cur)
+    if (length(uni) == 4) {
+      for (j in 1:41) {
+        if (length(unique(cluster[j, ])) == 1) {
+          trans[i, j] = 1 / 8
+        } else if (length(unique(cluster[j, ])) == 3) {
+          trans[i, j] = 1 / 24
+        }
+      }
+    } else if (length(uni) == 1) {
+      for (j in 1:41) {
+        if (length(unique(cluster[j, ])) == 4) {
+          trans[i, j] = 1 / 2
+        } else if (sum(cluster[j, ] == uni) == 3) {
+          trans[i, j] = 1 / 6
+        }
+      }
+    } else if (length(uni) == 2 & as.numeric(table(cur))[1] == 2) {
+      for (j in 1:41) {
+        if (sum(cluster[j, ] == cur) == 3) {
+          trans[i, j] = 1 / 4
+        }
+      } 
+    } else if (length(uni) == 2 & max(table(cur)) == 3) {
+      for (j in 1:41) {
+        if (sum(cluster[j, ] == cur) == 3 & length(unique(cluster[j, ])) <= 2) {
+          trans[i, j] = 1 / 6
+        } else if (sum(cluster[j, ] == cur) == 3 & length(unique(cluster[j, ])) == 3) {
+          trans[i, j] = 1 / 4
+        }
+      }
+    } else if (length(uni) == 3) {
+      for (j in 1:41) {
+        if (sum(cluster[j, ] == cur) == 3 & length(unique(cluster[j, ])) == 3) {
+          trans[i, j] = 1 / 4
+        } else if (length(unique(cluster[j, ])) == 4) {
+          trans[i, j] = 1 / 2
+        }
+      }
+    }
+  } 
+  return (trans)
+}
 
 #### MCMC Sampling and calculate likelihood for the final stage
 post_sas = function(response, activity, N, ninter, cluster, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {

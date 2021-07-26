@@ -26,8 +26,8 @@ rho0 = 0.5
 alpha = 0.026
 reject_rate = 1 - alpha ## For hypothesis testing
 
-prob = c(0.15, 0.15, 0.45, 0.45) ## true p
-acti = c(0.15, 0.15, 0.45, 0.45)  ## true activity
+prob = c(0.15, 0.15, 0.15, 0.15) ## true p
+acti = c(0.15, 0.15, 0.15, 0.15)  ## true activity
 #cluster = c(1, 1, 1, 1) ## true cluster structure
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = qnorm(acti) - qnorm(a0)
@@ -41,7 +41,9 @@ Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 reject_prob = reject_acti = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
-cluster = getCluster(N)
+cluster = getCluster(N) ## 41 possibilities in total
+
+trans = getTrans(cluster)
 
 pb = txtProgressBar(style = 3)
 for (m in 1:M) {
