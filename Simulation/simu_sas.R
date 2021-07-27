@@ -7,6 +7,7 @@ library(pbivnorm)
 library(dplyr)
 library(tikzDevice)
 library(ggplot2)
+library(xtable)
 
 
 rm(list = ls())
@@ -91,32 +92,54 @@ report
 
 
 
-resp = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/SaS/prob_4act.csv")[, -1])
-acti = as.matrix(read.csv("~/Dropbox/Mayo-intern/Simulation/Results/SaS/acti_4act.csv")[, -1])
 
-M = 50
-response = as.numeric(c(resp[1, ], resp[2, ], resp[3, ], resp[4, ]))
-activity = as.numeric(c(acti[1, ], acti[2, ], acti[3, ], acti[4, ]))
-arm = c(rep("arm 1", M), rep("arm 2", M), rep("arm 3", M), rep("arm 4", M))
-arm = factor(arm, levels = c("arm 1", "arm 2", "arm 3", "arm 4"))
-rst = data.frame("response" = response, "activity" = activity, "arm" = arm)
+#### Results
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/mix")
+#prob = c(0.15, 0.15, 0.15, 0.45) ## true p
+#acti = c(3, 3, 4, 4)  ## true activity
+post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
+post_prob_lower_all = as.matrix(read.csv("prob_lower.csv")[, -1])
+post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
+post_acti_all = as.matrix(read.csv("acti.csv")[, -1])
+post_acti_lower_all = as.matrix(read.csv("acti_lower.csv")[, -1])
+post_acti_upper_all = as.matrix(read.csv("acti_upper.csv")[, -1])
+reject_prob = as.matrix(read.csv("rej_prob.csv")[, -1])
+reject_acti = as.matrix(read.csv("rej_acti.csv")[, -1])
+
+report = cbind(rowMeans(post_prob_all, na.rm = TRUE),
+               rowMeans(post_prob_lower_all, na.rm = TRUE),
+               rowMeans(post_prob_upper_all, na.rm = TRUE),
+               #rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE) * 100,
+               rowMeans(post_acti_all, na.rm = TRUE),
+               rowMeans(post_acti_lower_all, na.rm = TRUE),
+               rowMeans(post_acti_upper_all, na.rm = TRUE),
+               #rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
+               rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
+               rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
+report = as.data.frame(report)
+colnames(report) = c("p_hat", "CI_l", "CI_u", "mu_hat", "CI_l", "CI_u", "weak", "strong")
+report
+
+xtable(report, digits = c(1, rep(2, 6), 1, 1))
 
 
-setwd("~/Dropbox/Mayo-intern/Simulation")
-tikz("plot.tex", standAlone = TRUE, width = 6, height = 5)
-ggplot(rst, aes(x = arm, y = response, fill = arm)) + 
-  geom_boxplot(alpha = 1, width = 0.7, outlier.colour = "red", outlier.fill = "red", outlier.size = 2, outlier.alpha = 1) + 
-  scale_fill_brewer(palette = "Dark2") + xlab("") + ylab("") + 
-  theme(axis.text = element_text(size = 15), axis.title = element_text(size = 25), legend.position = "none")
-dev.off()
-tools::texi2dvi("plot.tex", pdf = T)
+M = 100
+rst1 = c(post_prob_all[1, ], post_prob_all[2, ], post_prob_all[3, ], post_prob_all[4, ])
+rst2 = c(post_acti_all[1, ], post_acti_all[2, ], post_acti_all[3, ], post_acti_all[4, ])
+estimator = c(rep("Response", 4 * M), rep("Activity", 4 * M))
+estimator = factor(estimator, levels = c("Response", "Activity"))
+arm = rep(rep(c("Arm 1", "Arm 2", "Arm 3", "Arm 4"), each = M), 2)
+rst = data.frame("value" = c(rst1, rst2), "estimator" = estimator, "arm" = arm)
 
-
-tikz("plot.tex", standAlone = TRUE, width = 6, height = 5)
-ggplot(rst, aes(x = arm, y = activity, fill = arm)) + 
-  geom_boxplot(alpha = 1, width = 0.7, outlier.colour = "red", outlier.fill = "red", outlier.size = 2, outlier.alpha = 1) + 
-  scale_fill_brewer(palette = "Dark2") + xlab("") + ylab("") + 
-  theme(axis.text = element_text(size = 15), axis.title = element_text(size = 25), legend.position = "none")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation")
+tikz("plot.tex", standAlone = TRUE, width = 5, height = 5)
+ggplot(rst, aes(x = arm, y = value, fill = estimator)) + 
+  geom_boxplot(lwd = 0.5, alpha = 1, width = 0.9, outlier.colour = "red", outlier.fill = "red", outlier.size = 2, outlier.alpha = 0) + 
+  scale_fill_brewer(palette = "Dark2") + xlab("") + ylab("Parameters estimation") + 
+  #scale_y_continuous(breaks = seq(0, 0.8, 0.2)) + 
+  ylim(0, 0.8) + 
+  theme(axis.text = element_text(size = 15), axis.title = element_text(size = 20)) +
+  theme(legend.position = "none")
 dev.off()
 tools::texi2dvi("plot.tex", pdf = T)
 
