@@ -4,6 +4,7 @@ library(rjags)
 library(gtools)
 library(mvtnorm)
 library(pbivnorm)
+library(dplyr)
 library(tikzDevice)
 library(ggplot2)
 
@@ -42,6 +43,12 @@ post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
 cluster = getCluster(N) ## 41 possibilities in total
 trans = getTrans(cluster)
+
+## 1: unique
+rst = c(0, 0, 0, 0, 0, 0)
+## 1: 1/3
+
+
 
 pb = txtProgressBar(style = 3)
 for (m in 1:M) {
