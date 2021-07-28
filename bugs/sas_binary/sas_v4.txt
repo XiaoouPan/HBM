@@ -1,0 +1,24 @@
+# 3 outcomes clustering groups with continuous activity
+
+model { 
+  for (i in 1:N) {
+    for (j in 1:ninter) {
+      response[i, j] ~ dinterval(Z[i, j, 1], 0)
+      activity[i, j] ~ dinterval(Z[i, j, 2], 0)
+      Z[i, j, 1:2] ~ dmnorm(c(mu1[i], mu2[i]), prec)
+    }
+    mu1[i] <- ifelse(c_ind[i] == i, nor1[i], nor1[c_ind[i]])
+    mu2[i] <- ifelse(c_ind[i] == i, nor2[i], nor2[c_ind[i]])
+    nor1[i] ~ dnorm(0, 0.00001)
+    nor2[i] ~ dnorm(0, 0.00001)
+  }
+  c_ind <- cluster[cluster_ind, ]
+  prec[1, 1] <- 1.0 / (1 - rho * rho)
+  prec[1, 2] <- -rho / (1 - rho * rho)
+  prec[2, 1] <- -rho / (1 - rho * rho)
+  prec[2, 2] <- 1.0 / (1 - rho * rho)
+  rho ~ dunif(-1, 1)
+  cluster_ind ~ dcat(cluster_prob)
+  cluster_prob <- trans[null_ind, ]
+  null_ind ~ dcat(null_prob)
+}
