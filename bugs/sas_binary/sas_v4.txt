@@ -21,14 +21,14 @@ model {
   mu23 <- ifelse(ss2[2] == 0, mu21, mu21 + diff2)
   mu12 <- ifelse(ss1[1] == 0, mu11, mu11 + diff1)
   mu22 <- ifelse(ss2[1] == 0, mu21, mu21 + diff2)
-  mu11 ~ dnorm(0, 0.01)
-  mu21 ~ dnorm(0, 0.01)
+  mu11 ~ dnorm(0, 0.001)
+  mu21 ~ dnorm(0, 0.001)
   for (i in 1:(N - 1)) {
     ss1[i] ~ dbern(0.5)
     ss2[i] ~ dbern(0.5)
   }
-  diff1 ~ dnorm(1, 0.01)
-  diff2 ~ dnorm(1, 0.01)
+  diff1 ~ dnorm(1, 0.001)
+  diff2 ~ dnorm(1, 0.001)
   prec[1, 1] <- 1.0 / (1 - rho * rho)
   prec[1, 2] <- -rho / (1 - rho * rho)
   prec[2, 1] <- -rho / (1 - rho * rho)

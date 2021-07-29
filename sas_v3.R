@@ -60,8 +60,7 @@ post_sas = function(response, activity, N, ninter, cluster, n.adapt = 5000, n.bu
              N = N,
              ninter = ninter,
              cluster = cluster,
-             trans = trans,
-             null_prob = rep(1 / 15, 15))
+             cluster_prob = rep(1 / 15, 15))
   Z = array(0, dim = c(N, ninter, 2))
   for (i in 1:N) {
     Z[i, , ] = mvrnorm(ninter, c(0, 0), matrix(c(1, 0.5, 0.5, 1), 2, 2))
@@ -76,8 +75,7 @@ post_sas = function(response, activity, N, ninter, cluster, n.adapt = 5000, n.bu
                                           nor1 = rep(0, N),
                                           nor2 = rep(0, N),
                                           rho = 0.5,
-                                          cluster_ind = 15,
-                                          null_ind = 15),
+                                          cluster_ind = 15),
                              n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
   try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
   res.bugs = try(jags.samples(thismodel, 
