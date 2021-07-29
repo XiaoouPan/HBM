@@ -17,7 +17,7 @@ source('sas_v4.R')
 ninter = 22
 n1 = 11
 N = 4
-M = 10
+M = 5
 n.adapt = 10000
 n.burn = 10000
 n.iter = 20000
@@ -50,12 +50,12 @@ for (m in 1:M) {
   set.seed(m)
   ## Data generation
   for (i in 1:N) {
-    Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
+    Z = mvrnorm(ninter, c(qnorm(prob)[i], qnorm(acti)[i]), Sigma)
     response[i, ] = as.numeric(Z[, 1] > 0)
     activity[i, ] = as.numeric(Z[, 2] > 0)
   }
 
-  res = post_sas(response, activity, N, ninter, n.adapt, n.burn, n.iter)
+  res = post_sas(response, activity, N, ninter, mu1_h0 = qnorm(p0), mu2_h0 = qnorm(a0), n.adapt, n.burn, n.iter)
   this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
   post_prob_all[, m] = as.numeric(rowMeans(this_prob))
   reject_prob[, m] = as.numeric(rowMeans(this_prob > p0) > reject_rate)
@@ -81,7 +81,7 @@ report = cbind(rowMeans(post_prob_all, na.rm = TRUE),
                rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
                rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
 report = as.data.frame(report)
-colnames(report) = c("p_hat", "CI_l", "CI_u", "mu_hat", "CI_l", "CI_u", "weak", "strong")
+colnames(report) = c("p_hat", "CI_l", "CI_u", "a_hat", "CI_l", "CI_u", "weak", "strong")
 report
 
 

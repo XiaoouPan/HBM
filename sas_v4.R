@@ -1,13 +1,15 @@
 #### Spike and slab code: pairwise difference   ####
 
-post_sas = function(response, activity, N, ninter, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
+post_sas = function(response, activity, N, ninter, mu1_h0, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
   dat = list(response = response,
              activity = activity,
              N = N,
-             ninter = ninter)
+             ninter = ninter,
+             mu1_h0 = mu1_h0, 
+             mu2_h0 = mu2_h0)
   Z = array(0, dim = c(N, ninter, 2))
   for (i in 1:N) {
-    Z[i, , ] = mvrnorm(ninter, c(0, 0), matrix(c(1, 0.5, 0.5, 1), 2, 2))
+    Z[i, , ] = mvrnorm(ninter, c(mu1_h0[i], mu2_h0[i]), matrix(c(1, 0.5, 0.5, 1), 2, 2))
     for (j in 1:ninter) {
       Z[i, j, 1] = ifelse(dat$response[i, j] == 1, abs(Z[i, j, 1]), -abs(Z[i, j, 1]))
       Z[i, j, 2] = ifelse(dat$activity[i, j] == 1, abs(Z[i, j, 2]), -abs(Z[i, j, 2]))
