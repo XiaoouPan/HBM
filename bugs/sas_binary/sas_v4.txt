@@ -1,24 +1,39 @@
 # 3 outcomes clustering groups with continuous activity
 
 model { 
-  for (i in 1:N) {
-    for (j in 1:ninter) {
-      response[i, j] ~ dinterval(Z[i, j, 1], 0)
-      activity[i, j] ~ dinterval(Z[i, j, 2], 0)
-      Z[i, j, 1:2] ~ dmnorm(c(mu1[i], mu2[i]), prec)
-    }
-    mu1[i] <- ifelse(c_ind[i] == i, nor1[i], nor1[c_ind[i]])
-    mu2[i] <- ifelse(c_ind[i] == i, nor2[i], nor2[c_ind[i]])
-    nor1[i] ~ dnorm(0, 0.00001)
-    nor2[i] ~ dnorm(0, 0.00001)
+  for (j in 1:ninter) {
+    response[1, j] ~ dinterval(Z[1, j, 1], 0)
+    activity[1, j] ~ dinterval(Z[1, j, 2], 0)
+    Z[1, j, 1:2] ~ dmnorm(c(mu11, mu21), prec)
+    response[2, j] ~ dinterval(Z[2, j, 1], 0)
+    activity[2, j] ~ dinterval(Z[2, j, 2], 0)
+    Z[2, j, 1:2] ~ dmnorm(c(mu12, mu22), prec)
+    response[3, j] ~ dinterval(Z[3, j, 1], 0)
+    activity[3, j] ~ dinterval(Z[3, j, 2], 0)
+    Z[3, j, 1:2] ~ dmnorm(c(mu13, mu23), prec)
+    response[4, j] ~ dinterval(Z[4, j, 1], 0)
+    activity[4, j] ~ dinterval(Z[4, j, 2], 0)
+    Z[4, j, 1:2] ~ dmnorm(c(mu14, mu24), prec)
   }
-  c_ind <- cluster[cluster_ind, ]
+  mu14 <- ifelse(ss1[4] == 0, mu13, mu13 + diff1[4])
+  mu24 <- ifelse(ss2[4] == 0, mu23, mu23 + diff2[4])
+  mu13 <- ifelse(ss1[3] == 0, mu12, mu12 + diff1[3])
+  mu23 <- ifelse(ss2[3] == 0, mu22, mu22 + diff2[3])
+  mu12 <- ifelse(ss1[2] == 0, mu11, mu11 + diff1[2])
+  mu22 <- ifelse(ss2[2] == 0, mu21, mu21 + diff2[2])
+  mu11 <- ifelse(ss1[1] == 0, 0, diff1[1])
+  mu21 <- ifelse(ss2[1] == 0, 0, diff2[1])
+  for (i in 1:N) {
+    diff1[i] ~ dnorm(0, 0.00001)
+    ss1[i] ~ dbern(p1[i])
+    p1[i] ~ dunif(0, 1)
+    diff2[i] ~ dnorm(0, 0.00001)
+    ss2[i] ~ dbern(p2[i])
+    p2[i] ~ dunif(0, 1)
+  }
   prec[1, 1] <- 1.0 / (1 - rho * rho)
   prec[1, 2] <- -rho / (1 - rho * rho)
   prec[2, 1] <- -rho / (1 - rho * rho)
   prec[2, 2] <- 1.0 / (1 - rho * rho)
   rho ~ dunif(-1, 1)
-  cluster_ind ~ dcat(cluster_prob)
-  cluster_prob <- trans[null_ind, ]
-  null_ind ~ dcat(null_prob)
 }
