@@ -12,24 +12,24 @@ library(xtable)
 
 rm(list = ls())
 
-source('sas_v3.R')
+source('sas_v4.R')
 
 ninter = 22
 n1 = 11
 N = 4
-M = 5
-n.adapt = 5000
-n.burn = 5000
-n.iter = 10000
+M = 10
+n.adapt = 10000
+n.burn = 10000
+n.iter = 20000
 
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 a0 = c(0.15, 0.15, 0.15, 0.15) ## null activity level
 rho0 = 0.5
-alpha = 0.026
+alpha = 0.1
 reject_rate = 1 - alpha ## For hypothesis testing
 
-prob = c(0.15, 0.15, 0.45, 0.45) ## true p
-acti = c(0.15, 0.15, 0.45, 0.45)  ## true activity
+prob = c(0.15, 0.15, 0.15, 0.45) ## true p
+acti = c(0.15, 0.15, 0.15, 0.45)  ## true activity
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = qnorm(acti) - qnorm(a0)
 
@@ -42,8 +42,8 @@ Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 reject_prob = reject_acti = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
-cluster = getCluster(N) ## 15 or 41 possibilities in total
-trans = getTrans(cluster)
+#cluster = getCluster(N) ## 15 or 41 possibilities in total
+#trans = getTrans(cluster)
 
 pb = txtProgressBar(style = 3)
 for (m in 1:M) {
@@ -55,7 +55,7 @@ for (m in 1:M) {
     activity[i, ] = as.numeric(Z[, 2] > 0)
   }
 
-  res = post_sas(response, activity, N, ninter, cluster, n.adapt, n.burn, n.iter)
+  res = post_sas(response, activity, N, ninter, n.adapt, n.burn, n.iter)
   this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
   post_prob_all[, m] = as.numeric(rowMeans(this_prob))
   reject_prob[, m] = as.numeric(rowMeans(this_prob > p0) > reject_rate)
@@ -72,16 +72,16 @@ for (m in 1:M) {
 
 
 ## report
-report = cbind(prob,
-               rowMeans(post_prob_all, na.rm = TRUE),
-               rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE),
-               acti,
+report = cbind(rowMeans(post_prob_all, na.rm = TRUE),
+               rowMeans(post_prob_lower_all, na.rm = TRUE),
+               rowMeans(post_prob_upper_all, na.rm = TRUE),
                rowMeans(post_acti_all, na.rm = TRUE),
-               rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE),
-               rowMeans(reject_prob | reject_acti, na.rm = TRUE),
-               rowMeans(reject_prob & reject_acti, na.rm = TRUE))
+               rowMeans(post_acti_lower_all, na.rm = TRUE),
+               rowMeans(post_acti_upper_all, na.rm = TRUE),
+               rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
+               rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
 report = as.data.frame(report)
-colnames(report) = c("true_p", "p_hat", "p_CI", "true_a", "a_hat", "a_CI", "weak", "strong")
+colnames(report) = c("p_hat", "CI_l", "CI_u", "mu_hat", "CI_l", "CI_u", "weak", "strong")
 report
 
 
