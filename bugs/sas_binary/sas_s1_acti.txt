@@ -1,0 +1,19 @@
+# 3 outcomes clustering groups with continuous activity
+
+model { 
+  for (i in 1:N) {
+    activity[i] ~ dbin(prob[i], ninter)
+  }
+  prob[1] <- 1 - pnorm(0, mu2_h0[1] + mu21, 1)
+  prob[2] <- 1 - pnorm(0, mu2_h0[2] + mu22, 1)
+  prob[3] <- 1 - pnorm(0, mu2_h0[3] + mu23, 1)
+  prob[4] <- 1 - pnorm(0, mu2_h0[4] + mu24, 1)
+  mu24 <- ifelse(ss2[3] == 0, mu21, mu21 + diff2)
+  mu23 <- ifelse(ss2[2] == 0, mu21, mu21 + diff2)
+  mu22 <- ifelse(ss2[1] == 0, mu21, mu21 + diff2)
+  mu21 ~ dnorm(0, 0.001)
+  for (i in 1:(N - 1)) {
+    ss2[i] ~ dbern(0.5)
+  }
+  diff2 ~ dnorm(1, 0.001)T(0.75, )
+}

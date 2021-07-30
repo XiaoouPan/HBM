@@ -1,5 +1,27 @@
 #### Spike and slab code: pairwise difference   ####
 
+s1_acti_sas = function(activity, N, n1, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
+  dat = list(activity = activity,
+             N = N,
+             ninter = n1,
+             mu2_h0 = mu2_h0)
+  thismodel = try(jags.model(file = "bugs/sas_binary/sas_s1_acti.txt", 
+                             data = dat, 
+                             inits = list(diff2 = 1,
+                                          mu21 = 0,
+                                          ss2 = rep(0, N - 1)),
+                             n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
+  try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
+  res.bugs = try(jags.samples(thismodel, 
+                              variable.names = c("mu21", "mu22", "mu23", "mu24"),
+                              n.iter = n.iter, progress.bar = "none"), silent = TRUE)
+  mu2_rec = rbind(as.numeric(res.bugs$mu21), as.numeric(res.bugs$mu22), as.numeric(res.bugs$mu23), as.numeric(res.bugs$mu24))
+  return (list("mu2_rec" = mu2_rec))
+}
+
+
+
+
 post_sas = function(response, activity, N, ninter, mu1_h0, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
   dat = list(response = response,
              activity = activity,

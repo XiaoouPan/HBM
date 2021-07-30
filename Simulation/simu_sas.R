@@ -24,8 +24,8 @@ n.iter = 20000
 
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 a0 = c(0.15, 0.15, 0.15, 0.15) ## null activity level
-rho0 = 0.5
-alpha = 0.1
+rho0 = 0.75
+alpha = 0.026
 reject_rate = 1 - alpha ## For hypothesis testing
 
 prob = c(0.15, 0.15, 0.15, 0.45) ## true p
@@ -75,20 +75,22 @@ for (m in 1:M) {
 report = cbind(rowMeans(post_prob_all, na.rm = TRUE),
                rowMeans(post_prob_lower_all, na.rm = TRUE),
                rowMeans(post_prob_upper_all, na.rm = TRUE),
+               #rowMeans(post_prob_lower_all < prob & post_prob_upper_all > prob, na.rm = TRUE) * 100,
                rowMeans(post_acti_all, na.rm = TRUE),
                rowMeans(post_acti_lower_all, na.rm = TRUE),
                rowMeans(post_acti_upper_all, na.rm = TRUE),
+               #rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
                rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
                rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
 report = as.data.frame(report)
-colnames(report) = c("p_hat", "CI_l", "CI_u", "a_hat", "CI_l", "CI_u", "weak", "strong")
+colnames(report) = c("p_hat", "CI_l", "CI_u", "mu_hat", "CI_l", "CI_u", "weak", "strong")
 report
 
 
 
 
 #### Results
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/mix")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/2act")
 #prob = c(0.15, 0.15, 0.15, 0.45) ## true p
 #acti = c(3, 3, 4, 4)  ## true activity
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
