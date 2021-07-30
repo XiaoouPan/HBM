@@ -1,7 +1,7 @@
 #### Spike and slab code: pairwise difference   ####
 
 s1_acti_sas = function(activity, N, n1, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
-  r1 = sum(activity)
+  r1 = rowSums(activity)
   dat = list(activity = r1,
              N = N,
              ninter = n1,

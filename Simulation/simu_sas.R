@@ -39,7 +39,7 @@ Z = matrix(0, ninter, 2) ## underlying bivariate normal
 Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 
 #early_stop = matrix(0, N, M)
-reject_prob = reject_acti = matrix(0, N, M)
+early_stop = reject_prob = reject_acti = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
 #cluster = getCluster(N) ## 15 or 41 possibilities in total
@@ -54,18 +54,39 @@ for (m in 1:M) {
     response[i, ] = as.numeric(Z[, 1] > 0)
     activity[i, ] = as.numeric(Z[, 2] > 0)
   }
-
-  res = post_sas(response, activity, N, ninter, mu1_h0 = qnorm(p0), mu2_h0 = qnorm(a0), n.adapt, n.burn, n.iter)
-  this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
-  post_prob_all[, m] = as.numeric(rowMeans(this_prob))
-  reject_prob[, m] = as.numeric(rowMeans(this_prob > p0) > reject_rate)
-  post_prob_upper_all[, m] = apply(this_prob, 1, quantile, 1 - alpha / 2)
-  post_prob_lower_all[, m] = apply(this_prob, 1, quantile, alpha / 2)
+  
+  ## Interim stage
+  res = s1_acti_sas(activity[, 1:n1], N, n1, mu2_h0 = qnorm(a0), n.adapt, n.burn, n.iter)
   this_acti = pnorm(0, mean = qnorm(a0) + res$mu2_rec, sd = 1, lower.tail = FALSE)
   post_acti_all[, m] = as.numeric(rowMeans(this_acti))
   reject_acti[, m] = as.numeric(rowMeans(this_acti > a0) > reject_rate)
   post_acti_upper_all[, m] = apply(this_acti, 1, quantile, 1 - alpha / 2)
   post_acti_lower_all[, m] = apply(this_acti, 1, quantile, alpha / 2)
+  
+  if (sum(reject_acti[, m]) == 0) {
+    early_stop[, m] = c(1, 1, 1, 1)
+    setTxtProgressBar(pb, m / M)
+    next
+  }
+  
+  ## Final stage
+  arm_remain = which(reject_acti[, m] == 1)
+  N_remain = length(arm_remain)
+  early_stop[-arm_remain, m] = rep(1, N - N_remain)
+  response_remain = response[arm_remain, , drop = FALSE]
+  activity_remain = activity[arm_remain, , drop = FALSE]
+  
+  res = post_sas(response_remain, activity_remain, N_remain, ninter, mu1_h0 = qnorm(p0)[arm_remain], mu2_h0 = qnorm(a0)[arm_remain], n.adapt, n.burn, n.iter)
+  this_prob = pnorm(0, mean = qnorm(p0)[arm_remain] + res$mu1_rec, sd = 1, lower.tail = FALSE)
+  post_prob_all[arm_remain, m] = as.numeric(rowMeans(this_prob))
+  reject_prob[arm_remain, m] = as.numeric(rowMeans(this_prob > p0[arm_remain]) > reject_rate)
+  post_prob_upper_all[arm_remain, m] = apply(this_prob, 1, quantile, 1 - alpha / 2)
+  post_prob_lower_all[arm_remain, m] = apply(this_prob, 1, quantile, alpha / 2)
+  this_acti = pnorm(0, mean = qnorm(a0)[arm_remain] + res$mu2_rec, sd = 1, lower.tail = FALSE)
+  post_acti_all[arm_remain, m] = as.numeric(rowMeans(this_acti))
+  reject_acti[arm_remain, m] = as.numeric(rowMeans(this_acti > a0[arm_remain]) > reject_rate)
+  post_acti_upper_all[arm_remain, m] = apply(this_acti, 1, quantile, 1 - alpha / 2)
+  post_acti_lower_all[arm_remain, m] = apply(this_acti, 1, quantile, alpha / 2)
   
   setTxtProgressBar(pb, m / M)
 }
