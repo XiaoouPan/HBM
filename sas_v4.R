@@ -1,7 +1,8 @@
 #### Spike and slab code: pairwise difference   ####
 
 s1_acti_sas = function(activity, N, n1, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
-  dat = list(activity = activity,
+  r1 = sum(activity)
+  dat = list(activity = r1,
              N = N,
              ninter = n1,
              mu2_h0 = mu2_h0)
@@ -18,8 +19,6 @@ s1_acti_sas = function(activity, N, n1, mu2_h0, n.adapt = 5000, n.burn = 5000, n
   mu2_rec = rbind(as.numeric(res.bugs$mu21), as.numeric(res.bugs$mu22), as.numeric(res.bugs$mu23), as.numeric(res.bugs$mu24))
   return (list("mu2_rec" = mu2_rec))
 }
-
-
 
 
 post_sas = function(response, activity, N, ninter, mu1_h0, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
