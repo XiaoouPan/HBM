@@ -18,9 +18,9 @@ ninter = 22
 n1 = 11
 N = 4
 M = 5
-n.adapt = 10000
-n.burn = 10000
-n.iter = 20000
+n.adapt = 5000
+n.burn = 5000
+n.iter = 10000
 
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 a0 = c(0.15, 0.15, 0.15, 0.15) ## null activity level
@@ -39,7 +39,7 @@ Z = matrix(0, ninter, 2) ## underlying bivariate normal
 Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 
 #early_stop = matrix(0, N, M)
-early_stop = reject_prob = reject_acti = matrix(0, N, M)
+early_stop = reject_weak = reject_strong = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
 #cluster = getCluster(N) ## 15 or 41 possibilities in total
@@ -55,38 +55,25 @@ for (m in 1:M) {
     activity[i, ] = as.numeric(Z[, 2] > 0)
   }
   
-  ## Interim stage
-  res = s1_acti_sas(activity[, 1:n1], N, n1, mu2_h0 = qnorm(a0), n.adapt, n.burn, n.iter)
-  this_acti = pnorm(0, mean = qnorm(a0) + res$mu2_rec, sd = 1, lower.tail = FALSE)
-  post_acti_all[, m] = as.numeric(rowMeans(this_acti))
-  reject_acti[, m] = as.numeric(rowMeans(this_acti > a0) > reject_rate)
-  post_acti_upper_all[, m] = apply(this_acti, 1, quantile, 1 - alpha / 2)
-  post_acti_lower_all[, m] = apply(this_acti, 1, quantile, alpha / 2)
-  
-  if (sum(reject_acti[, m]) == 0) {
-    early_stop[, m] = c(1, 1, 1, 1)
-    setTxtProgressBar(pb, m / M)
-    next
-  }
-  
   ## Final stage
-  arm_remain = which(reject_acti[, m] == 1)
+  arm_remain = c(1, 2, 3, 4)
+  #arm_remain = which(reject_acti[, m] == 1)
   N_remain = length(arm_remain)
-  early_stop[-arm_remain, m] = rep(1, N - N_remain)
+  #early_stop[-arm_remain, m] = rep(1, N - N_remain)
   response_remain = response[arm_remain, , drop = FALSE]
   activity_remain = activity[arm_remain, , drop = FALSE]
   
-  res = post_sas(response_remain, activity_remain, N_remain, ninter, mu1_h0 = qnorm(p0)[arm_remain], mu2_h0 = qnorm(a0)[arm_remain], n.adapt, n.burn, n.iter)
+  res = post_sas(response_remain, activity_remain, N_remain, ninter, p0, mu1_h0 = qnorm(p0)[arm_remain], a0, mu2_h0 = qnorm(a0)[arm_remain], n.adapt, n.burn, n.iter)
   this_prob = pnorm(0, mean = qnorm(p0)[arm_remain] + res$mu1_rec, sd = 1, lower.tail = FALSE)
   post_prob_all[arm_remain, m] = as.numeric(rowMeans(this_prob))
-  reject_prob[arm_remain, m] = as.numeric(rowMeans(this_prob > p0[arm_remain]) > reject_rate)
   post_prob_upper_all[arm_remain, m] = apply(this_prob, 1, quantile, 1 - alpha / 2)
   post_prob_lower_all[arm_remain, m] = apply(this_prob, 1, quantile, alpha / 2)
   this_acti = pnorm(0, mean = qnorm(a0)[arm_remain] + res$mu2_rec, sd = 1, lower.tail = FALSE)
   post_acti_all[arm_remain, m] = as.numeric(rowMeans(this_acti))
-  reject_acti[arm_remain, m] = as.numeric(rowMeans(this_acti > a0[arm_remain]) > reject_rate)
   post_acti_upper_all[arm_remain, m] = apply(this_acti, 1, quantile, 1 - alpha / 2)
   post_acti_lower_all[arm_remain, m] = apply(this_acti, 1, quantile, alpha / 2)
+  reject_weak[arm_remain, m] = as.numeric(rowMeans(this_prob > p0[arm_remain] | this_acti > a0[arm_remain]) > reject_rate)
+  reject_strong[arm_remain, m] = as.numeric(rowMeans(this_prob > p0[arm_remain] & this_acti > a0[arm_remain]) > reject_rate)
   
   setTxtProgressBar(pb, m / M)
 }
@@ -101,8 +88,8 @@ report = cbind(rowMeans(post_prob_all, na.rm = TRUE),
                rowMeans(post_acti_lower_all, na.rm = TRUE),
                rowMeans(post_acti_upper_all, na.rm = TRUE),
                #rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
-               rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
-               rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
+               rowMeans(reject_weak, na.rm = TRUE) * 100,
+               rowMeans(reject_strong, na.rm = TRUE) * 100)
 report = as.data.frame(report)
 colnames(report) = c("p_hat", "CI_l", "CI_u", "mu_hat", "CI_l", "CI_u", "weak", "strong")
 report

@@ -36,23 +36,29 @@ post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.ada
       Z[i, j, 2] = ifelse(dat$activity[i, j] == 1, abs(Z[i, j, 2]), -abs(Z[i, j, 2]))
     }
   }
-  ss10 = as.numeric(rowMeans(response) > p0)
-  ss20 = as.numeric(rowMeans(activity) > a0)
+  ss10 = as.numeric(rowMeans(response) > p0 + 0.15)
+  ss20 = as.numeric(rowMeans(activity) > a0 + 0.15)
+  p10 = 0.25 + 0.5 * as.numeric(rowMeans(response) > p0 + 0.15)
+  p20 = 0.25 + 0.5 * as.numeric(rowMeans(activity) > a0 + 0.15)
   thismodel = try(jags.model(file = "bugs/sas_binary/sas_v4.txt", 
                              data = dat, 
                              inits = list(Z = Z,
-                                          diff1 = 2,
-                                          diff2 = 2,
+                                          diff1 = 1,
+                                          diff2 = 1,
                                           ss1 = ss10,
                                           ss2 = ss20,
+                                          p1 = p10,
+                                          p2 = p20,
                                           rho = 0.5),
                              n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
   try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
   res.bugs = try(jags.samples(thismodel, 
-                              variable.names = c("mu1", "mu2",  "rho"),
+                              variable.names = c("mu1", "mu2", "p1", "p2", "rho"),
                               n.iter = n.iter, progress.bar = "none"), silent = TRUE)
   mu1_rec = matrix(res.bugs$mu1, N, n.iter)
   mu2_rec = matrix(res.bugs$mu2, N, n.iter)
+  p1 = matrix(res.bugs$p1, N, n.iter)
+  p2 = matrix(res.bugs$p2, N, n.iter)
   rho = as.numeric(res.bugs$rho)
-  return (list("mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec, "rho" = rho))
+  return (list("mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec, "p1" = p1, "p2" = p2, "rho" = rho))
 }
