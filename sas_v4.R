@@ -21,7 +21,7 @@ s1_acti_sas = function(activity, N, n1, mu2_h0, n.adapt = 5000, n.burn = 5000, n
 }
 
 
-post_sas = function(response, activity, N, ninter, mu1_h0, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
+post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
   dat = list(response = response,
              activity = activity,
              N = N,
@@ -36,23 +36,23 @@ post_sas = function(response, activity, N, ninter, mu1_h0, mu2_h0, n.adapt = 500
       Z[i, j, 2] = ifelse(dat$activity[i, j] == 1, abs(Z[i, j, 2]), -abs(Z[i, j, 2]))
     }
   }
+  ss10 = as.numeric(rowMeans(response) > p0)
+  ss20 = as.numeric(rowMeans(activity) > a0)
   thismodel = try(jags.model(file = "bugs/sas_binary/sas_v4.txt", 
                              data = dat, 
                              inits = list(Z = Z,
-                                          diff1 = 1,
-                                          diff2 = 1,
-                                          mu11 = 0,
-                                          mu21 = 0,
-                                          ss1 = rep(0, N - 1),
-                                          ss2 = rep(0, N - 1),
+                                          diff1 = 2,
+                                          diff2 = 2,
+                                          ss1 = ss10,
+                                          ss2 = ss20,
                                           rho = 0.5),
                              n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
   try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
   res.bugs = try(jags.samples(thismodel, 
-                              variable.names = c("mu11", "mu12", "mu13", "mu14", "mu21", "mu22", "mu23", "mu24", "rho"),
+                              variable.names = c("mu1", "mu2",  "rho"),
                               n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-  mu1_rec = rbind(as.numeric(res.bugs$mu11), as.numeric(res.bugs$mu12), as.numeric(res.bugs$mu13), as.numeric(res.bugs$mu14))
-  mu2_rec = rbind(as.numeric(res.bugs$mu21), as.numeric(res.bugs$mu22), as.numeric(res.bugs$mu23), as.numeric(res.bugs$mu24))
+  mu1_rec = matrix(res.bugs$mu1, N, n.iter)
+  mu2_rec = matrix(res.bugs$mu2, N, n.iter)
   rho = as.numeric(res.bugs$rho)
   return (list("mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec, "rho" = rho))
 }
