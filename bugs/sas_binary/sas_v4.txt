@@ -1,29 +1,14 @@
 # 3 outcomes clustering groups with continuous activity
 
-model { 
-  for (j in 1:ninter) {
-    response[1, j] ~ dinterval(Z[1, j, 1], 0)
-    activity[1, j] ~ dinterval(Z[1, j, 2], 0)
-    Z[1, j, 1:2] ~ dmnorm(c(mu1_h0[1] + mu11, mu2_h0[1] + mu21), prec)
-    response[2, j] ~ dinterval(Z[2, j, 1], 0)
-    activity[2, j] ~ dinterval(Z[2, j, 2], 0)
-    Z[2, j, 1:2] ~ dmnorm(c(mu1_h0[2] + mu12, mu2_h0[2] + mu22), prec)
-    response[3, j] ~ dinterval(Z[3, j, 1], 0)
-    activity[3, j] ~ dinterval(Z[3, j, 2], 0)
-    Z[3, j, 1:2] ~ dmnorm(c(mu1_h0[3] + mu13, mu2_h0[3] + mu23), prec)
-    response[4, j] ~ dinterval(Z[4, j, 1], 0)
-    activity[4, j] ~ dinterval(Z[4, j, 2], 0)
-    Z[4, j, 1:2] ~ dmnorm(c(mu1_h0[4] + mu14, mu2_h0[4] + mu24), prec)
-  }
-  mu14 <- ifelse(ss1[3] == 0, mu11, mu11 + diff1)
-  mu24 <- ifelse(ss2[3] == 0, mu21, mu21 + diff2)
-  mu13 <- ifelse(ss1[2] == 0, mu11, mu11 + diff1)
-  mu23 <- ifelse(ss2[2] == 0, mu21, mu21 + diff2)
-  mu12 <- ifelse(ss1[1] == 0, mu11, mu11 + diff1)
-  mu22 <- ifelse(ss2[1] == 0, mu21, mu21 + diff2)
-  mu11 ~ dnorm(0, 0.001)
-  mu21 ~ dnorm(0, 0.001)
-  for (i in 1:(N - 1)) {
+model {
+  for (i in 1:N) {
+    for (j in 1:ninter) {
+      response[i, j] ~ dinterval(Z[i, j, 1], 0)
+      activity[i, j] ~ dinterval(Z[i, j, 2], 0)
+      Z[i, j, 1:2] ~ dmnorm(c(mu1_h0[i] + mu1[i], mu2_h0[i] + mu2[i]), prec)
+    }
+    mu1[i] <- ifelse(ss1[i] == 0, 0, diff1)
+    mu2[i] <- ifelse(ss2[i] == 0, 0, diff2)
     ss1[i] ~ dbern(0.5)
     ss2[i] ~ dbern(0.5)
   }
