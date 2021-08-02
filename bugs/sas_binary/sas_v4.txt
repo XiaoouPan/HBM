@@ -14,8 +14,8 @@ model {
     p1[i] ~ dunif(0, 1)
     p2[i] ~ dunif(0, 1)
   }
-  diff1 ~ dnorm(2, 0.001)T(0.75, )
-  diff2 ~ dnorm(2, 0.001)T(0.75, )
+  diff1 ~ dnorm(2, 0.001)T(0.5, )
+  diff2 ~ dnorm(2, 0.001)T(0.5, )
   prec[1, 1] <- 1.0 / (1 - rho * rho)
   prec[1, 2] <- -rho / (1 - rho * rho)
   prec[2, 1] <- -rho / (1 - rho * rho)
