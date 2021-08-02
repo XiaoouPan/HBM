@@ -36,10 +36,10 @@ post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.ada
       Z[i, j, 2] = ifelse(dat$activity[i, j] == 1, abs(Z[i, j, 2]), -abs(Z[i, j, 2]))
     }
   }
-  ss10 = as.numeric(rowMeans(response) > p0 + 0.15)
-  ss20 = as.numeric(rowMeans(activity) > a0 + 0.15)
-  p10 = 0.25 + 0.5 * as.numeric(rowMeans(response) > p0 + 0.15)
-  p20 = 0.25 + 0.5 * as.numeric(rowMeans(activity) > a0 + 0.15)
+  ss10 = as.numeric(rowMeans(response) > p0 + 0.2)
+  ss20 = as.numeric(rowMeans(activity) > a0 + 0.2)
+  p10 = 0.25 + 0.5 * as.numeric(rowMeans(response) > p0 + 0.2)
+  p20 = 0.25 + 0.5 * as.numeric(rowMeans(activity) > a0 + 0.2)
   thismodel = try(jags.model(file = "bugs/sas_binary/sas_v4.txt", 
                              data = dat, 
                              inits = list(Z = Z,
