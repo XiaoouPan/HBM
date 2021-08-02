@@ -22,10 +22,14 @@ s1_acti_sas = function(activity, N, n1, mu2_h0, n.adapt = 5000, n.burn = 5000, n
 
 
 post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
+  p1 = 0.25 + 0.5 * as.numeric(rowMeans(response) > p0 + 0.2)
+  p2 = 0.25 + 0.5 * as.numeric(rowMeans(activity) > a0 + 0.2)
   dat = list(response = response,
              activity = activity,
              N = N,
              ninter = ninter,
+             p1 = p1,
+             p2 = p2,
              mu1_h0 = mu1_h0, 
              mu2_h0 = mu2_h0)
   Z = array(0, dim = c(N, ninter, 2))
@@ -38,8 +42,6 @@ post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.ada
   }
   ss10 = as.numeric(rowMeans(response) > p0 + 0.2)
   ss20 = as.numeric(rowMeans(activity) > a0 + 0.2)
-  p10 = 0.25 + 0.5 * as.numeric(rowMeans(response) > p0 + 0.2)
-  p20 = 0.25 + 0.5 * as.numeric(rowMeans(activity) > a0 + 0.2)
   thismodel = try(jags.model(file = "bugs/sas_binary/sas_v4.txt", 
                              data = dat, 
                              inits = list(Z = Z,
@@ -47,18 +49,14 @@ post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.ada
                                           diff2 = 2,
                                           ss1 = ss10,
                                           ss2 = ss20,
-                                          p1 = p10,
-                                          p2 = p20,
                                           rho = 0.5),
                              n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
   try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
   res.bugs = try(jags.samples(thismodel, 
-                              variable.names = c("mu1", "mu2", "p1", "p2", "rho"),
+                              variable.names = c("mu1", "mu2", "rho"),
                               n.iter = n.iter, progress.bar = "none"), silent = TRUE)
   mu1_rec = matrix(res.bugs$mu1, N, n.iter)
   mu2_rec = matrix(res.bugs$mu2, N, n.iter)
-  p1 = matrix(res.bugs$p1, N, n.iter)
-  p2 = matrix(res.bugs$p2, N, n.iter)
   rho = as.numeric(res.bugs$rho)
-  return (list("mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec, "p1" = p1, "p2" = p2, "rho" = rho))
+  return (list("mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec, "rho" = rho))
 }
