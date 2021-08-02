@@ -12,8 +12,8 @@ model {
     ss1[i] ~ dbern(p1[i])
     ss2[i] ~ dbern(p2[i])
   }
-  diff1 ~ dnorm(2, 0.001)T(0.5, )
-  diff2 ~ dnorm(2, 0.001)T(0.5, )
+  diff1 ~ dnorm(1, 1)T(0.5, )
+  diff2 ~ dnorm(1, 1)T(0.5, )
   prec[1, 1] <- 1.0 / (1 - rho * rho)
   prec[1, 2] <- -rho / (1 - rho * rho)
   prec[2, 1] <- -rho / (1 - rho * rho)

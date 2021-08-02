@@ -22,8 +22,8 @@ s1_acti_sas = function(activity, N, n1, mu2_h0, n.adapt = 5000, n.burn = 5000, n
 
 
 post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
-  p1 = 0.25 + 0.5 * as.numeric(rowMeans(response) > p0 + 0.2)
-  p2 = 0.25 + 0.5 * as.numeric(rowMeans(activity) > a0 + 0.2)
+  p1 = 0.25 + 0.5 * as.numeric(rowMeans(response) > p0 + 0.15)
+  p2 = 0.25 + 0.5 * as.numeric(rowMeans(activity) > a0 + 0.15)
   dat = list(response = response,
              activity = activity,
              N = N,
@@ -45,8 +45,8 @@ post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.ada
   thismodel = try(jags.model(file = "bugs/sas_binary/sas_v4.txt", 
                              data = dat, 
                              inits = list(Z = Z,
-                                          diff1 = 2,
-                                          diff2 = 2,
+                                          diff1 = 1,
+                                          diff2 = 1,
                                           ss1 = ss10,
                                           ss2 = ss20,
                                           rho = 0.5),
