@@ -1,9 +1,11 @@
 #### Estimate the correlation as our first step
-get_cor = function(response, activity, N, ninter, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+get_cor = function(response, activity, N, ninter, p0, mu0, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   dat = list(response = response,
              activity = activity,
              N = N,
-             ninter = ninter)
+             ninter = ninter,
+             p_h0 = qnorm(p0),
+             mu_h0 = mu0)
   thismodel = try(jags.model(file = "bugs/cont/cor.txt", 
                              data = dat, 
                              inits = list(mu1 = rep(0, N),
@@ -20,7 +22,7 @@ get_cor = function(response, activity, N, ninter, n.adapt = 1000, n.burn = 1000,
 
 
 #### MCMC Sampling and likelihood for the interim stage, using response (sum of response)
-post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+post_s1_resp = function(response, n1, group, cutoff_int, p0, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
   mu1_rec = matrix(0, length(group), n.iter)
   
@@ -31,6 +33,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     r1 = sum(response[ind, ])
     dat = list(response = r1,
                ninter = n1,
+               p_h0 = qnorm(p0)[ind],
                cutoff1 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c1_uni_resp.txt", 
                                data = dat, 
@@ -52,6 +55,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     dat = list(response = rowSums(response_sub),
                N = N,
                ninter = n1,
+               p_h0 = qnorm(p0)[ind],
                cutoff1 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c1_resp.txt", 
                                data = dat, 
@@ -87,6 +91,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     r1 = sum(response[ind, ])
     dat = list(response = r1,
                ninter = n1,
+               p_h0 = qnorm(p0)[ind],
                cutoff1 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c2_uni_resp.txt", 
                                data = dat, 
@@ -108,6 +113,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     dat = list(response = rowSums(response_sub),
                N = N,
                ninter = n1,
+               p_h0 = qnorm(p0)[ind],
                cutoff1 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c2_resp.txt", 
                                data = dat, 
@@ -140,7 +146,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, n.adapt = 1000, n.burn 
 
 
 #### MCMC Sampling and likelihood for the interim stage, using activity
-post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+post_s1_acti = function(activity, n1, group, cutoff_int, mu0, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
   mu2_rec = matrix(0, length(group), n.iter)
   
@@ -150,6 +156,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
   if (N == 1) {
     dat = list(activity = activity[ind, ],
                ninter = n1,
+               mu_h0 = mu0[ind],
                cutoff2 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c1_uni_acti.txt", 
                                data = dat, 
@@ -175,6 +182,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     dat = list(activity = activity_sub,
                N = N,
                ninter = n1,
+               mu_h0 = mu0[ind],
                cutoff2 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c1_acti.txt", 
                                data = dat, 
@@ -212,6 +220,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
   if (N == 1) {
     dat = list(activity = activity[ind, ],
                ninter = n1,
+               mu_h0 = mu0[ind],
                cutoff2 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c2_uni_acti.txt", 
                                data = dat, 
@@ -237,6 +246,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
     dat = list(activity = activity_sub,
                N = N,
                ninter = n1,
+               mu_h0 = mu0[ind],
                cutoff2 = cutoff_int)
     thismodel = try(jags.model(file = "bugs/cont/int_c2_acti.txt", 
                                data = dat, 
@@ -272,7 +282,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, n.adapt = 1000, n.burn 
 
 
 #### MCMC Sampling and calculate likelihood for the final stage
-post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
+post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
   mu1_rec = mu2_rec = matrix(0, length(group), n.iter)
   
@@ -283,6 +293,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     dat = list(response = response[ind, ],
                activity = activity[ind, ],
                ninter = ninter,
+               p_h0 = qnorm(p0)[ind],
+               mu_h0 = mu0[ind], 
                cutoff = cutoff,
                cutoff2 = cutoff2)
     thismodel = try(jags.model(file = "bugs/cont/c1_uni.txt", 
@@ -320,6 +332,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                activity = activity[ind, ],
                N = N,
                ninter = ninter,
+               p_h0 = qnorm(p0)[ind],
+               mu_h0 = mu0[ind], 
                cutoff = cutoff,
                cutoff2 = cutoff2)
     thismodel = try(jags.model(file = "bugs/cont/c1.txt", 
@@ -374,6 +388,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     dat = list(response = response[ind, ],
                activity = activity[ind, ],
                ninter = ninter,
+               p_h0 = qnorm(p0)[ind],
+               mu_h0 = mu0[ind], 
                cutoff = cutoff,
                cutoff2 = cutoff2)
     thismodel = try(jags.model(file = "bugs/cont/c2_uni.txt", 
@@ -411,6 +427,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                activity = activity[ind, ],
                N = N,
                ninter = ninter,
+               p_h0 = qnorm(p0)[ind],
+               mu_h0 = mu0[ind], 
                cutoff = cutoff,
                cutoff2 = cutoff2)
     thismodel = try(jags.model(file = "bugs/cont/c2.txt", 
@@ -465,6 +483,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
     dat = list(response = response[ind, ],
                activity = activity[ind, ],
                ninter = ninter,
+               p_h0 = qnorm(p0)[ind],
+               mu_h0 = mu0[ind], 
                cutoff = cutoff)
     thismodel = try(jags.model(file = "bugs/cont/c3_uni.txt", 
                                data = dat, 
@@ -501,6 +521,8 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, n.adapt = 10
                activity = activity[ind, ],
                N = N,
                ninter = ninter,
+               p_h0 = qnorm(p0)[ind],
+               mu_h0 = mu0[ind], 
                cutoff = cutoff)
     thismodel = try(jags.model(file = "bugs/cont/c3.txt", 
                                data = dat, 
