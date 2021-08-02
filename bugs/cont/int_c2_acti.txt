@@ -3,7 +3,7 @@
 model { 
   for (i in 1:N) {
     for (j in 1:ninter) {
-      activity[i, j] ~ dnorm(mu2[i], prec)
+      activity[i, j] ~ dnorm(mu_h0[i] + mu2[i], prec)
     }
     mu2[i] ~ dnorm(mumix2, muprec2)T(cutoff2,)
   }

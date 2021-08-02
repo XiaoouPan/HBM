@@ -3,8 +3,8 @@
 model { 
   for (j in 1:ninter) {
     response[j] ~ dbern(1 - prob[j])
-    prob[j] <- pnorm(0, mu1 + rho * (activity[j] - mu2) * sqrt(prec), 1.0 / (1 - rho * rho))
-    activity[j] ~ dnorm(mu2, prec)
+    prob[j] <- pnorm(0, p_h0 + mu1 + rho * (activity[j] - mu_h0 - mu2) * sqrt(prec), 1.0 / (1 - rho * rho))
+    activity[j] ~ dnorm(mu_h0 + mu2, prec)
   }
   rho ~ dunif(-1, 1)
   mu1 ~ dnorm(1, 0.00001)T(cutoff, )

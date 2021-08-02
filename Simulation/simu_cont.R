@@ -47,7 +47,7 @@ cutoff_int2 = epsilon_2
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
 post_cluster_all = matrix(0, N, M)
 early_stop = matrix(0, N, M)
-reject_prob = reject_acti = matrix(0, N, M)
+reject_weak = reject_strong = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
 
@@ -56,7 +56,7 @@ for (m in 1:M) {
   set.seed(m)
   ## Data generation
   for (i in 1:N) {
-    Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
+    Z = mvrnorm(ninter, c(qnorm(p0)[i] + mu1[i], mu0[i] + mu2[i]), Sigma)
     response[i, ] = as.numeric(Z[, 1] > 0)
     activity[i, ] = Z[, 2]
   }
