@@ -98,7 +98,7 @@ report
 
 
 #### Results
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/3act")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/mode")
 #prob = c(0.15, 0.15, 0.15, 0.45) ## true p
 #acti = c(3, 3, 4, 4)  ## true activity
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
@@ -107,8 +107,8 @@ post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
 post_acti_all = as.matrix(read.csv("acti.csv")[, -1])
 post_acti_lower_all = as.matrix(read.csv("acti_lower.csv")[, -1])
 post_acti_upper_all = as.matrix(read.csv("acti_upper.csv")[, -1])
-reject_prob = as.matrix(read.csv("rej_prob.csv")[, -1])
-reject_acti = as.matrix(read.csv("rej_acti.csv")[, -1])
+reject_weak = as.matrix(read.csv("rej_weak.csv")[, -1])
+reject_strong = as.matrix(read.csv("rej_strong.csv")[, -1])
 
 report = cbind(rowMeans(post_prob_all, na.rm = TRUE),
                rowMeans(post_prob_lower_all, na.rm = TRUE),
@@ -118,8 +118,8 @@ report = cbind(rowMeans(post_prob_all, na.rm = TRUE),
                rowMeans(post_acti_lower_all, na.rm = TRUE),
                rowMeans(post_acti_upper_all, na.rm = TRUE),
                #rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
-               rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
-               rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
+               rowMeans(reject_weak, na.rm = TRUE) * 100,
+               rowMeans(reject_strong, na.rm = TRUE) * 100)
 report = as.data.frame(report)
 colnames(report) = c("p_hat", "CI_l", "CI_u", "mu_hat", "CI_l", "CI_u", "weak", "strong")
 report

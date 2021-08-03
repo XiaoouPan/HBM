@@ -15,7 +15,7 @@ ninter = 22
 n1 = 11
 N = 4
 C = 3
-M = 1
+M = 3
 n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
@@ -30,11 +30,8 @@ rho0 = 0.75
 alpha = 0.026
 reject_rate = 1 - alpha ## For hypothesis testing
 
-prob = c(0.15, 0.15, 0.15, 0.15) ## true p
-acti = c(3, 3, 3, 3)  ## true activity
-mu1 = qnorm(prob) - qnorm(p0)
-mu2 = acti - mu0
-cluster = c(1, 1, 1, 1) ## true cluster structure
+prob = c(0.15, 0.15, 0.45, 0.45) ## true p
+acti = c(3, 3, 4, 4)  ## true activity
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
@@ -56,23 +53,22 @@ for (m in 1:M) {
   set.seed(m)
   ## Data generation
   for (i in 1:N) {
-    Z = mvrnorm(ninter, c(qnorm(p0)[i] + mu1[i], mu0[i] + mu2[i]), Sigma)
+    Z = mvrnorm(ninter, c(qnorm(prob)[i], acti[i]), Sigma)
     response[i, ] = as.numeric(Z[, 1] > 0)
     activity[i, ] = Z[, 2]
   }
   
   ## Estimate correlation as preliminary analysis
-  cor_est = get_cor(response[, 1:n1], activity[, 1:n1], N, n1, n.adapt, n.burn, n.iter)
+  cor_est = get_cor(response[, 1:n1], activity[, 1:n1], N, n1, p0, mu0, n.adapt, n.burn, n.iter)
   
   ## Interim stage with only one outcome
   prob_est = prob_upper_rec = prob_lower_rec = NULL 
   acti_est = acti_upper_rec = acti_lower_rec = NULL
-  
   bayes_cluster = NULL
   activity_s1 = activity[, 1:n1]
   for (i in 1:nrow(s1_cluster)) {
     group = s1_cluster[i, ]
-    res = post_s1_acti(activity_s1, n1, group, cutoff_int2, n.adapt, n.burn, n.iter)
+    res = post_s1_acti(activity_s1, n1, group, cutoff_int2, mu0, n.adapt, n.burn, n.iter)
     bayes_cluster = c(bayes_cluster, res$factor)
     this_acti = mu0 + res$mu2_rec
     acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
@@ -88,7 +84,7 @@ for (m in 1:M) {
   response_s1 = response[, 1:n1]
   for (i in 1:nrow(s1_cluster)) {
     group = s1_cluster[i, ]
-    res = post_s1_resp(response_s1, n1, group, cutoff_int1, n.adapt, n.burn, n.iter)
+    res = post_s1_resp(response_s1, n1, group, cutoff_int1, p0, n.adapt, n.burn, n.iter)
     bayes_cluster = c(bayes_cluster, res$factor)
     this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
     prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
@@ -116,28 +112,28 @@ for (m in 1:M) {
   activity_remain = activity[arm_remain, , drop = FALSE]
   all_cluster = permutations(n = C, r = N_remain, repeats.allowed = T)
   bayes_cluster = NULL
-  prob_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
-  acti_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL 
+  weak_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
+  strong_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
     group = all_cluster[i, ]
-    res = post(response_remain, activity_remain, ninter, group, cutoff, cutoff2, n.adapt, n.burn, n.iter)
+    res = post(response_remain, activity_remain, ninter, group, cutoff, cutoff2, p0[arm_remain], mu0[arm_remain], n.adapt, n.burn, n.iter)
     this_prob = pnorm(0, mean = qnorm(p0[arm_remain]) + res$mu1_rec, sd = 1, lower.tail = FALSE)
     prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
-    prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0[arm_remain]) > reject_rate))
     prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 1 - alpha / 2))
     prob_lower_rec = rbind(prob_lower_rec, apply(this_prob, 1, quantile, alpha / 2))
     this_acti = mu0[arm_remain] + res$mu2_rec
     acti_est = rbind(acti_est, as.numeric(rowMeans(this_acti)))
-    acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > mu0[arm_remain]) > reject_rate))
     acti_upper_rec = rbind(acti_upper_rec, apply(this_acti, 1, quantile, 1 - alpha / 2))
     acti_lower_rec = rbind(acti_lower_rec, apply(this_acti, 1, quantile, alpha / 2))
+    weak_rec = rbind(weak_rec, as.numeric(rowMeans(this_prob > p0[arm_remain] | this_acti > mu0[arm_remain]) > reject_rate))
+    strong_rec = rbind(strong_rec, as.numeric(rowMeans(this_prob > p0[arm_remain] & this_acti > mu0[arm_remain]) > reject_rate))
     bayes_cluster = c(bayes_cluster, res$factor)# this the result vector of BF after iterating thru every permutation
   }
   index = which.max(bayes_cluster)
   post_cluster_all[-arm_remain, m] = rep(1, N - N_remain)
   post_cluster_all[arm_remain, m] = all_cluster[index, ]
-  reject_prob[arm_remain, m] = prob_rec[index, ]
-  reject_acti[arm_remain, m] = acti_rec[index, ]
+  reject_weak[arm_remain, m] = weak_rec[index, ]
+  reject_strong[arm_remain, m] = strong_rec[index, ]
   post_prob_all[arm_remain, m] = prob_est[index, ]
   post_prob_upper_all[arm_remain, m] = prob_upper_rec[index, ]
   post_prob_lower_all[arm_remain, m] = prob_lower_rec[index, ]

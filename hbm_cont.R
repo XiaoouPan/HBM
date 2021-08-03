@@ -49,7 +49,7 @@ post_s1_resp = function(response, n1, group, cutoff_int, p0, n.adapt = 1000, n.b
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
     #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
     p0 = pnorm(0, mean = mu1, sd = 1)
-    rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
+    rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T) ## may report error
   } else if (N >= 2) {
     response_sub = response[ind, ]
     dat = list(response = rowSums(response_sub),
