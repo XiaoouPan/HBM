@@ -42,12 +42,13 @@ cutoff2 = epsilon_mu
 cutoff_int1 = qnorm(p0[1] + epsilon_1) - qnorm(p0[1])
 cutoff_int2 = epsilon_2
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
-post_cluster_all = post_rho_all = matrix(0, N, M)
+post_cluster_all = matrix(0, N, M)
+post_rho_all = post_rho_upper_all = post_rho_lower_all = matrix(NA, N, M)
 early_stop = matrix(0, N, M)
 reject_weak = reject_strong = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
-feasibility = rho_int = rep(0, M)
+feasibility = rho_int = rho_int_upper = rho_int_lower = rep(0, M)
 
 pb = txtProgressBar(style = 3)
 for (m in 1:M) {
@@ -98,6 +99,8 @@ for (m in 1:M) {
   post_prob_lower_all[, m] = prob_lower_rec[index1, ]
   index = ifelse(mean(cor_est > 0.5) > 0.9, index2, index1)
   rho_int[m] = mean(cor_est)
+  rho_int_upper[m] = quantile(cor_est, 0.975)
+  rho_int_lower[m] = quantile(cor_est, 0.025)
   feasibility[m] = as.numeric(mean(cor_est > 0.5) > 0.9)
   
   if (sum(s1_cluster[index, ] == 1) == 4) {
@@ -115,12 +118,16 @@ for (m in 1:M) {
   activity_remain = activity[arm_remain, , drop = FALSE]
   all_cluster = permutations(n = C, r = N_remain, repeats.allowed = T)
   bayes_cluster = NULL
-  rho_rec = NULL
+  rho_rec = rho_upper_rec = rho_lower_rec = NULL
   weak_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
   strong_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
     group = all_cluster[i, ]
     res = post(response_remain, activity_remain, ninter, group, cutoff, cutoff2, p0[arm_remain], mu0[arm_remain], n.adapt, n.burn, n.iter)
+    this_rho = res$rho_rec
+    rho_rec = rbind(rho_rec, as.numeric(rowMeans(this_rho)))
+    rho_upper_rec = rbind(rho_upper_rec, apply(this_rho, 1, quantile, 0.975))
+    rho_lower_rec = rbind(rho_lower_rec, apply(this_rho, 1, quantile, 0.025))
     this_prob = pnorm(0, mean = qnorm(p0[arm_remain]) + res$mu1_rec, sd = 1, lower.tail = FALSE)
     prob_est = rbind(prob_est, as.numeric(rowMeans(this_prob)))
     prob_upper_rec = rbind(prob_upper_rec, apply(this_prob, 1, quantile, 1 - alpha / 2))
@@ -136,6 +143,9 @@ for (m in 1:M) {
   index = which.max(bayes_cluster)
   post_cluster_all[-arm_remain, m] = rep(1, N - N_remain)
   post_cluster_all[arm_remain, m] = all_cluster[index, ]
+  post_rho_all[arm_remain, m] = rho_rec[index, ]
+  post_rho_upper_all[arm_remain, m] = rho_upper_rec[index, ]
+  post_rho_lower_all[arm_remain, m] = rho_lower_rec[index, ]
   reject_weak[arm_remain, m] = weak_rec[index, ]
   reject_strong[arm_remain, m] = strong_rec[index, ]
   post_prob_all[arm_remain, m] = prob_est[index, ]
@@ -184,8 +194,20 @@ report = as.data.frame(report)
 colnames(report) = c("C1", "C2", "C3", "early", "p_hat", "CI_l", "CI_u", "mu_hat", "CI_l", "CI_u", "weak", "strong")
 report
 
-
 xtable(report, digits = c(1, rep(1, 4), rep(2, 6), 1, 1))
+
+
+report = cbind(rep(mean(feasibility), 4),
+               rep(mean(rho_int), 4),
+               rep(mean(rho_int_lower), 4),
+               rep(mean(rho_int_upper), 4),
+               rowMeans(post_rho_all, na.rm = TRUE),
+               rowMeans(post_rho_lower_all, na.rm = TRUE),
+               rowMeans(post_rho_upper_all, na.rm = TRUE))
+report = as.data.frame(report)
+colnames(report) = c("feasibility", "rho_int", "CI_l", "CI_u", "rho", "CI_l", "CI_u")
+report
+
 
 
 ### Plots of estimators

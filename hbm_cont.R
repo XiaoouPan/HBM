@@ -594,7 +594,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
       }
     }
   }
-  return (list("factor" = rst, "mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec))
+  return (list("factor" = rst, "mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec, "rho_rec" = rho_rec))
 }
 
 
