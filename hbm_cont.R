@@ -304,7 +304,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, mu0, n.adapt = 1000, n.
 #### MCMC Sampling and calculate likelihood for the final stage
 post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.adapt = 1000, n.burn = 1000, n.iter = 5000) {
   rst = 0  ## Bayesian factor for this group
-  mu1_rec = mu2_rec = matrix(0, length(group), n.iter)
+  mu1_rec = mu2_rec = rho_rec = matrix(0, length(group), n.iter)
   
   ## Cluster 1
   ind = which(group == 1)
@@ -334,6 +334,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
     prec = matrix(res.bugs$prec, nrow = 1)
     mu1_rec[ind, ] = mu1
     mu2_rec[ind, ] = mu2
+    rho_rec[ind, ] = rho
     #p3 = dnorm(mu1, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dnorm(mu2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
     #rst = rst + mean(log(p3), na.rm = T) + mean(log(p4), na.rm = T)
@@ -373,7 +374,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = N)
     mu2 = matrix(res.bugs$mu2, nrow = N)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    rho = matrix(res.bugs$rho, nrow = N)
     prec = matrix(res.bugs$prec, nrow = 1)
     mumix = matrix(res.bugs$mumix, nrow = 1)
     muprec = matrix(res.bugs$muprec, nrow = 1)
@@ -381,6 +382,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
     mu1_rec[ind, ] = mu1
     mu2_rec[ind, ] = mu2
+    rho_rec[ind, ] = rho
     #p3 = dnorm(mumix, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dgamma(muprec, shape = 0.001, rate = 0.001, log = TRUE)
     #p5 = dnorm(mumix2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
@@ -392,7 +394,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
       rst = rst + mean(p7, na.rm = T) + mean(p8, na.rm = T)
       for (j in 1:ninter) {
         p1 = dnorm(activity_sub[n, j], mean = mu0[ind][n] + mu2[n, ], sd = 1 / sqrt(prec), log = TRUE)
-        p2 = pnorm(0, mean = qnorm(p0)[ind][n] + mu1[n, ] + rho * (activity_sub[n, j] - mu0[ind][n] - mu2[n, ]) * sqrt(prec), sd = sqrt(1 - rho^2))
+        p2 = pnorm(0, mean = qnorm(p0)[ind][n] + mu1[n, ] + rho[n] * (activity_sub[n, j] - mu0[ind][n] - mu2[n, ]) * sqrt(prec), sd = sqrt(1 - (rho[n])^2))
         if (response_sub[n, j] == 1) {
           p2 = 1 - p2
         }
@@ -429,6 +431,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
     prec = matrix(res.bugs$prec, nrow = 1)
     mu1_rec[ind, ] = mu1
     mu2_rec[ind, ] = mu2
+    rho_rec[ind, ] = rho
     #p3 = dnorm(mu1, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dnorm(mu2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
     #rst = rst + mean(log(p3), na.rm = T) + mean(log(p4), na.rm = T)
@@ -468,7 +471,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = N)
     mu2 = matrix(res.bugs$mu2, nrow = N)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    rho = matrix(res.bugs$rho, nrow = N)
     prec = matrix(res.bugs$prec, nrow = 1)
     mumix = matrix(res.bugs$mumix, nrow = 1)
     muprec = matrix(res.bugs$muprec, nrow = 1)
@@ -476,6 +479,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
     mu1_rec[ind, ] = mu1
     mu2_rec[ind, ] = mu2
+    rho_rec[ind, ] = rho
     #p3 = dnorm(mumix, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dgamma(muprec, shape = 0.001, rate = 0.001, log = TRUE)
     #p5 = dnorm(mumix2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
@@ -487,7 +491,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
       rst = rst + mean(p7, na.rm = T) + mean(p8, na.rm = T)
       for (j in 1:ninter) {
         p1 = dnorm(activity_sub[n, j], mean = mu0[ind][n] + mu2[n, ], sd = 1 / sqrt(prec), log = TRUE)
-        p2 = pnorm(0, mean = qnorm(p0)[ind][n] + mu1[n, ] + rho * (activity_sub[n, j] - mu0[ind][n] - mu2[n, ]) * sqrt(prec), sd = sqrt(1 - rho^2))
+        p2 = pnorm(0, mean = qnorm(p0)[ind][n] + mu1[n, ] + rho[n] * (activity_sub[n, j] - mu0[ind][n] - mu2[n, ]) * sqrt(prec), sd = sqrt(1 - (rho[n])^2))
         if (response_sub[n, j] == 1) {
           p2 = 1 - p2
         }
@@ -523,6 +527,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
     prec = matrix(res.bugs$prec, nrow = 1)
     mu1_rec[ind, ] = mu1
     mu2_rec[ind, ] = mu2
+    rho_rec[ind, ] = rho
     #p3 = dnorm(mu1, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dnorm(mu2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
     #rst = rst + mean(log(p3), na.rm = T) + mean(log(p4), na.rm = T)
@@ -561,7 +566,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
     mu1 = matrix(res.bugs$mu1, nrow = N)
     mu2 = matrix(res.bugs$mu2, nrow = N)
-    rho = matrix(res.bugs$rho, nrow = 1)
+    rho = matrix(res.bugs$rho, nrow = N)
     prec = matrix(res.bugs$prec, nrow = 1)
     mumix = matrix(res.bugs$mumix, nrow = 1)
     muprec = matrix(res.bugs$muprec, nrow = 1)
@@ -569,6 +574,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
     muprec2 = matrix(res.bugs$muprec2, nrow = 1)
     mu1_rec[ind, ] = mu1
     mu2_rec[ind, ] = mu2
+    rho_rec[ind, ] = rho
     #p3 = dnorm(mumix, mean = -2, sd = 1 / sqrt(0.00001)) / pnorm(cutoff, mean = -2, sd = 1 / sqrt(0.00001))
     #p4 = dgamma(muprec, shape = 0.001, rate = 0.001, log = TRUE)
     #p5 = dnorm(mumix2, mean = 1, sd = 1 / sqrt(0.00001)) / pnorm(cutoff2, mean = 1, sd = 1 / sqrt(0.00001))
@@ -580,7 +586,7 @@ post = function(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.a
       rst = rst + mean(p7, na.rm = T) + mean(p8, na.rm = T)
       for (j in 1:ninter) {
         p1 = dnorm(activity_sub[n, j], mean = mu0[ind][n] + mu2[n, ], sd = 1 / sqrt(prec), log = TRUE)
-        p2 = pnorm(0, mean = qnorm(p0)[ind][n] + mu1[n, ] + rho * (activity_sub[n, j] - mu0[ind][n] - mu2[n, ]) * sqrt(prec), sd = sqrt(1 - rho^2))
+        p2 = pnorm(0, mean = qnorm(p0)[ind][n] + mu1[n, ] + rho[n] * (activity_sub[n, j] - mu0[ind][n] - mu2[n, ]) * sqrt(prec), sd = sqrt(1 - (rho[n])^2))
         if (response_sub[n, j] == 1) {
           p2 = 1 - p2
         }

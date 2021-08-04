@@ -42,7 +42,7 @@ cutoff2 = epsilon_mu
 cutoff_int1 = qnorm(p0[1] + epsilon_1) - qnorm(p0[1])
 cutoff_int2 = epsilon_2
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
-post_cluster_all = rho_rec = matrix(0, N, M)
+post_cluster_all = post_rho_all = matrix(0, N, M)
 early_stop = matrix(0, N, M)
 reject_weak = reject_strong = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
@@ -115,6 +115,7 @@ for (m in 1:M) {
   activity_remain = activity[arm_remain, , drop = FALSE]
   all_cluster = permutations(n = C, r = N_remain, repeats.allowed = T)
   bayes_cluster = NULL
+  rho_rec = NULL
   weak_rec = prob_est = prob_upper_rec = prob_lower_rec = NULL 
   strong_rec = acti_est = acti_upper_rec = acti_lower_rec = NULL 
   for (i in 1:nrow(all_cluster)) {
