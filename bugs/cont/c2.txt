@@ -4,13 +4,13 @@ model {
   for (i in 1:N) {
     for (j in 1:ninter) {
       response[i, j] ~ dbern(1 - prob[i, j])
-      prob[i, j] <- pnorm(0, p_h0[i] + mu1[i] + rho * (activity[i, j] - mu_h0[i] - mu2[i]) * sqrt(prec), 1.0 / (1 - rho * rho))
+      prob[i, j] <- pnorm(0, p_h0[i] + mu1[i] + rho[i] * (activity[i, j] - mu_h0[i] - mu2[i]) * sqrt(prec), 1.0 / (1 - rho[i] * rho[i]))
       activity[i, j] ~ dnorm(mu_h0[i] + mu2[i], prec)
     }
     mu1[i] ~ dnorm(mumix, muprec)T(, cutoff)
     mu2[i] ~ dnorm(mumix2, muprec2)T(cutoff2, )
+    rho[i] ~ dunif(-1, 1)
   }
-  rho ~ dunif(-1, 1)
   prec ~ dgamma(0.001, 0.001)
   mumix ~ dnorm(0, 0.00001)T(, cutoff)
   muprec ~ dgamma(0.001, 0.001)

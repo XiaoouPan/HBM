@@ -15,7 +15,7 @@ ninter = 22
 n1 = 11
 N = 4
 C = 3
-M = 3
+M = 5
 n.adapt = 1000
 n.burn = 1000
 n.iter = 5000
@@ -42,11 +42,12 @@ cutoff2 = epsilon_mu
 cutoff_int1 = qnorm(p0[1] + epsilon_1) - qnorm(p0[1])
 cutoff_int2 = epsilon_2
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
-post_cluster_all = matrix(0, N, M)
+post_cluster_all = rho_rec = matrix(0, N, M)
 early_stop = matrix(0, N, M)
 reject_weak = reject_strong = matrix(0, N, M)
 post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(NA, N, M)
 post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
+feasibility = rho_int = rep(0, M)
 
 pb = txtProgressBar(style = 3)
 for (m in 1:M) {
@@ -96,6 +97,8 @@ for (m in 1:M) {
   post_prob_upper_all[, m] = prob_upper_rec[index1, ]
   post_prob_lower_all[, m] = prob_lower_rec[index1, ]
   index = ifelse(mean(cor_est > 0.5) > 0.9, index2, index1)
+  rho_int[m] = mean(cor_est)
+  feasibility[m] = as.numeric(mean(cor_est > 0.5) > 0.9)
   
   if (sum(s1_cluster[index, ] == 1) == 4) {
     post_cluster_all[, m] = c(1, 1, 1, 1)
@@ -174,8 +177,8 @@ report = cbind(rowMeans(post_cluster_all == 1) * 100,
                rowMeans(post_acti_lower_all, na.rm = TRUE),
                rowMeans(post_acti_upper_all, na.rm = TRUE),
                #rowMeans(post_acti_lower_all < acti & post_acti_upper_all > acti, na.rm = TRUE) * 100,
-               rowMeans(reject_prob | reject_acti, na.rm = TRUE) * 100,
-               rowMeans(reject_prob & reject_acti, na.rm = TRUE) * 100)
+               rowMeans(reject_weak, na.rm = TRUE) * 100,
+               rowMeans(reject_strong, na.rm = TRUE) * 100)
 report = as.data.frame(report)
 colnames(report) = c("C1", "C2", "C3", "early", "p_hat", "CI_l", "CI_u", "mu_hat", "CI_l", "CI_u", "weak", "strong")
 report
