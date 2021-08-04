@@ -43,13 +43,13 @@ post_s1_resp = function(response, n1, group, cutoff_int, p0, n.adapt = 1000, n.b
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu1"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu1 = matrix(res.bugs$mu1, nrow = 1)
+    mu1 = as.numeric(res.bugs$mu1)
     mu1_rec[ind, ] = mu1
     #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
     #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
-    p0 = pnorm(0, mean = mu1, sd = 1)
-    rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T) ## may report error
+    p0 = pnorm(0, mean = qnorm(p0)[ind] + mu1, sd = 1)
+    rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + ifelse(r1 == 0, 0, r1 * mean(log(1 - p0), na.rm = T)) 
   } else if (N >= 2) {
     response_sub = response[ind, ]
     dat = list(response = rowSums(response_sub),
@@ -79,8 +79,8 @@ post_s1_resp = function(response, n1, group, cutoff_int, p0, n.adapt = 1000, n.b
       p2 = dnorm(mu1[n, ], mean = mumix1, sd = 1 / sqrt(muprec1), log = TRUE) #- pnorm(cutoff_int, mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE)
       rst = rst + mean(p2, na.rm = T)
       r1 = sum(response_sub[n, ])
-      p0 = pnorm(0, mean = mu1[n, ], sd = 1)
-      rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
+      p0 = pnorm(0, mean = qnorm(p0)[ind][n] + mu1[n, ], sd = 1)
+      rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + ifelse(r1 == 0, 0, r1 * mean(log(1 - p0), na.rm = T))
     }
   }
   
@@ -101,13 +101,13 @@ post_s1_resp = function(response, n1, group, cutoff_int, p0, n.adapt = 1000, n.b
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu1"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu1 = matrix(res.bugs$mu1, nrow = 1)
+    mu1 = as.numeric(res.bugs$mu1)
     mu1_rec[ind, ] = mu1
     #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
     #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
-    p0 = pnorm(0, mean = mu1, sd = 1)
-    rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
+    p0 = pnorm(0, qnorm(p0)[ind] + mean = mu1, sd = 1)
+    rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + ifelse(r1 == 0, 0, r1 * mean(log(1 - p0), na.rm = T))
   } else if (N >= 2) {
     response_sub = response[ind, ]
     dat = list(response = rowSums(response_sub),
@@ -137,8 +137,8 @@ post_s1_resp = function(response, n1, group, cutoff_int, p0, n.adapt = 1000, n.b
       p2 = dnorm(mu1[n, ], mean = mumix1, sd = 1 / sqrt(muprec1), log = TRUE) #- pnorm(cutoff_int, mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE)
       rst = rst + mean(p2, na.rm = T)
       r1 = sum(response_sub[n, ])
-      p0 = pnorm(0, mean = mu1[n, ], sd = 1)
-      rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + r1 * mean(log(1 - p0), na.rm = T)
+      p0 = pnorm(0, mean = qnorm(p0)[ind][n] + mu1[n, ], sd = 1)
+      rst = rst + (n1 - r1) * mean(log(p0), na.rm = T) + ifelse(r1 == 0, 0, r1 * mean(log(1 - p0), na.rm = T))
     }
   }
   return (list("factor" = rst, "mu1_rec" = mu1_rec))
@@ -167,14 +167,14 @@ post_s1_acti = function(activity, n1, group, cutoff_int, mu0, n.adapt = 1000, n.
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu2", "prec"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu2 = matrix(res.bugs$mu2, nrow = 1)
+    mu2 = as.numeric(res.bugs$mu2)
     mu2_rec[ind, ] = mu2
     prec = matrix(res.bugs$prec, nrow = 1)
     #p2 = dnorm(mu2, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 0, sd = 1 / sqrt(0.00001), log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
     #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
     for (j in 1:n1) {
-      p1 = dnorm(activity[ind, j], mean = mu2, sd = 1 / sqrt(prec), log = TRUE)
+      p1 = dnorm(activity[ind, j], mean = mu0[ind] + mu2, sd = 1 / sqrt(prec), log = TRUE)
       rst = rst + mean(p1, na.rm = T)
     }
   } else if (N >= 2) {
@@ -208,7 +208,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, mu0, n.adapt = 1000, n.
       p2 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE) #- pnorm(cutoff_int, mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE)
       rst = rst + mean(p2, na.rm = T)
       for (j in 1:n1) {
-        p1 = dnorm(activity_sub[n, j], mean = mu2[n, ], sd = 1 / sqrt(prec), log = TRUE)
+        p1 = dnorm(activity_sub[n, j], mean = mu0[ind][n] + mu2[n, ], sd = 1 / sqrt(prec), log = TRUE)
         rst = rst + mean(p1, na.rm = T)
       }
     }
@@ -231,14 +231,14 @@ post_s1_acti = function(activity, n1, group, cutoff_int, mu0, n.adapt = 1000, n.
     res.bugs = try(jags.samples(thismodel, 
                                 variable.names = c("mu2", "prec"),
                                 n.iter = n.iter, progress.bar = "none"), silent = TRUE)
-    mu2 = matrix(res.bugs$mu2, nrow = 1)
+    mu2 = as.numeric(res.bugs$mu2)
     mu2_rec[ind, ] = mu2
     prec = matrix(res.bugs$prec, nrow = 1)
     #p2 = dnorm(mu2, mean = 1, sd = 1 / sqrt(0.00001), log = TRUE) - pnorm(cutoff_int, mean = 1, sd = 1 / sqrt(0.00001), lower.tail = FALSE, log = TRUE)
     #p3 = dgamma(prec, shape = 0.001, rate = 0.001, log = TRUE)
     #rst = rst + (mean(p2, na.rm = T) + mean(p3, na.rm = T))
     for (j in 1:n1) {
-      p1 = dnorm(activity[ind, j], mean = mu2, sd = 1 / sqrt(prec), log = TRUE)
+      p1 = dnorm(activity[ind, j], mean = mu0[ind] + mu2, sd = 1 / sqrt(prec), log = TRUE)
       rst = rst + mean(p1, na.rm = T)
     }
   } else if (N >= 2) {
@@ -272,7 +272,7 @@ post_s1_acti = function(activity, n1, group, cutoff_int, mu0, n.adapt = 1000, n.
       p2 = dnorm(mu2[n, ], mean = mumix2, sd = 1 / sqrt(muprec2), log = TRUE) #- pnorm(cutoff_int, mean = mumix2, sd = 1 / sqrt(muprec2), lower.tail = FALSE, log = TRUE)
       rst = rst + mean(p2, na.rm = T)
       for (j in 1:n1) {
-        p1 = dnorm(activity_sub[n, j], mean = mu2[n, ], sd = 1 / sqrt(prec), log = TRUE)
+        p1 = dnorm(activity_sub[n, j], mean = mu0[ind][n] + mu2[n, ], sd = 1 / sqrt(prec), log = TRUE)
         rst = rst + mean(p1, na.rm = T)
       }
     }
