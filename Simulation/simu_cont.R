@@ -200,7 +200,7 @@ xtable(report, digits = c(1, rep(1, 4), rep(2, 6), 1, 1))
 
 
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous_75/0act")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous_75/2act")
 feasibility = as.matrix(read.csv("feas.csv")[, -1])
 rho_int = as.matrix(read.csv("rho_int.csv")[, -1])
 rho_int_lower = as.matrix(read.csv("rho_int_lower.csv")[, -1])
@@ -210,7 +210,7 @@ post_rho_lower_all = as.matrix(read.csv("rho_lower.csv")[, -1])
 post_rho_upper_all = as.matrix(read.csv("rho_upper.csv")[, -1])
 
 
-report = cbind(rep(mean(feasibility), 4),
+report = cbind(rep(mean(feasibility), 4) * 100,
                rep(mean(rho_int), 4),
                rep(mean(rho_int_lower), 4),
                rep(mean(rho_int_upper), 4),
@@ -221,7 +221,7 @@ report = as.data.frame(report)
 colnames(report) = c("feasibility", "rho_int", "CI_l", "CI_u", "rho", "CI_l", "CI_u")
 report
 
-xtable(report, digits = c(1, rep(1, 4), rep(2, 6), 1, 1))
+xtable(report, digits = c(1, 1, rep(2, 6)))
 
 
 
