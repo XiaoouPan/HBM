@@ -159,9 +159,7 @@ for (m in 1:M) {
 }
 
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous/mix")
-#prob = c(0.15, 0.15, 0.15, 0.45) ## true p
-#acti = c(3, 3, 4, 4)  ## true activity
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous_75/0act")
 post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
 early_stop = as.matrix(read.csv("early.csv")[, -1])
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
@@ -170,8 +168,8 @@ post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
 post_acti_all = as.matrix(read.csv("acti.csv")[, -1])
 post_acti_lower_all = as.matrix(read.csv("acti_lower.csv")[, -1])
 post_acti_upper_all = as.matrix(read.csv("acti_upper.csv")[, -1])
-reject_prob = as.matrix(read.csv("rej_prob.csv")[, -1])
-reject_acti = as.matrix(read.csv("rej_acti.csv")[, -1])
+reject_weak = as.matrix(read.csv("rej_weak.csv")[, -1])
+reject_strong = as.matrix(read.csv("rej_strong.csv")[, -1])
 
 
 
@@ -197,6 +195,21 @@ report
 xtable(report, digits = c(1, rep(1, 4), rep(2, 6), 1, 1))
 
 
+
+
+
+
+
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous_75/0act")
+feasibility = as.matrix(read.csv("feas.csv")[, -1])
+rho_int = as.matrix(read.csv("rho_int.csv")[, -1])
+rho_int_lower = as.matrix(read.csv("rho_int_lower.csv")[, -1])
+rho_int_upper = as.matrix(read.csv("rho_int_upper.csv")[, -1])
+post_rho_all = as.matrix(read.csv("rho.csv")[, -1])
+post_rho_lower_all = as.matrix(read.csv("rho_lower.csv")[, -1])
+post_rho_upper_all = as.matrix(read.csv("rho_upper.csv")[, -1])
+
+
 report = cbind(rep(mean(feasibility), 4),
                rep(mean(rho_int), 4),
                rep(mean(rho_int_lower), 4),
@@ -207,6 +220,11 @@ report = cbind(rep(mean(feasibility), 4),
 report = as.data.frame(report)
 colnames(report) = c("feasibility", "rho_int", "CI_l", "CI_u", "rho", "CI_l", "CI_u")
 report
+
+xtable(report, digits = c(1, rep(1, 4), rep(2, 6), 1, 1))
+
+
+
 
 
 
