@@ -28,9 +28,6 @@ reject_rate = 1 - alpha ## For hypothesis testing
 
 prob = c(0.15, 0.15, 0.15, 0.15) ## true p
 acti = c(3, 3, 3, 3)  ## true activity
-mu1 = qnorm(prob) - qnorm(p0)
-mu2 = acti - mu0
-cluster = c(1, 1, 1, 1) ## true cluster structure
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
@@ -46,30 +43,27 @@ for (m in 1:M) {
   set.seed(m)
   ## Data generation
   for (i in 1:N) {
-    Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
+    Z = mvrnorm(ninter, c(qnorm(prob)[i], acti[i]), Sigma)
     response[i, ] = as.numeric(Z[, 1] > 0)
     activity[i, ] = Z[, 2]
   }
   
   for (j in 1:5) {
-    epsilon_mu = epsilon_mu_seq[j]
-    cutoff2 = epsilon_mu
+    cutoff2 = epsilon_mu_seq[j]
     bayes_cluster = NULL
-    prob_rec = acti_rec = NULL 
+    weak_rec = strong_rec = NULL 
     for (k in 1:nrow(all_cluster)) {
       group = all_cluster[k, ]
-      res = post(response, activity, ninter, group, cutoff, cutoff2, n.adapt, n.burn, n.iter)
+      res = post(response, activity, ninter, group, cutoff, cutoff2, p0, mu0, n.adapt, n.burn, n.iter)
       this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
-      prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
       this_acti = mu0 + res$mu2_rec
-      acti_rec = rbind(acti_rec, as.numeric(rowMeans(this_acti > mu0) > reject_rate))
+      weak_rec = rbind(weak_rec, as.numeric(rowMeans(this_prob > p0 | this_acti > mu0) > reject_rate))
+      strong_rec = rbind(strong_rec, as.numeric(rowMeans(this_prob > p0 & this_acti > mu0) > reject_rate))
       bayes_cluster = c(bayes_cluster, res$factor)# this the result vector of BF after iterating thru every permutation
     }
     index = which.max(bayes_cluster)
-    reject_prob = prob_rec[index, ]
-    reject_acti = acti_rec[index, ]
-    weak[, j] = weak[, j] + (reject_prob | reject_acti)
-    strong[, j] = strong[, j] + (reject_prob & reject_acti)
+    weak[, j] = weak[, j] + weak_rec[index, ]
+    strong[, j] = strong[, j] + strong_rec[index, ]
   }
   setTxtProgressBar(pb, m / M)
 }

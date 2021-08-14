@@ -23,107 +23,79 @@ reject_rate = 1 - alpha
 p0 = c(0.15, 0.15, 0.15, 0.15) ## null response rate
 mu0 = c(3, 3, 3, 3) ## null activity level
 rho0 = 0.75
-prob = c(0.15, 0.15, 0.15, 0.45) ## true p
-acti = c(3, 3, 3, 4)  ## true activity
-mu1 = qnorm(prob) - qnorm(p0)
-mu2 = acti - mu0
-cluster = c(1, 1, 1, 1) ## true cluster structure
+prob = c(0.15, 0.15, 0.15, 0.15) ## true p
+acti = c(3, 3, 3, 3)  ## true activity
 
 response = matrix(0, N, ninter)
 activity = matrix(0, N, ninter)
 Z = matrix(0, ninter, 2) ## underlying bivariate normal, one of them is unobservable
 Sigma = matrix(c(1, rho0, rho0, 1), 2, 2)
 s1_cluster = permutations(n = 2, r = N, repeats.allowed = T)
-reject_prob = reject_acti = matrix(0, N, M)
 post_cluster_all = matrix(0, N, M)
-#post_prob_all = post_prob_upper_all = post_prob_lower_all = matrix(0, N, M)
-#post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(0, N, M)
 
 
 ######## activity
 epsilon_seq = seq(0, 1, by = 0.05)
 l = length(epsilon_seq)
-early1 = early2 = matrix(0, N, l)
+early2 = matrix(0, N, l)
 pb = txtProgressBar(style = 3)
 for (j in 1:l) {
-  epsilon_2 = epsilon_seq[j]
-  #cutoff_int1 = qnorm(p0[1] + epsilon_1) - qnorm(p0[1])
-  cutoff_int2 = epsilon_2
+  cutoff_int2 = epsilon_seq[j]
   for (m in 1:M) {
-    #set.seed(m)
+    set.seed(m)
     ## Data generation
     for (i in 1:N) {
-      Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
+      Z = mvrnorm(ninter, c(qnorm(prob)[i], acti[i]), Sigma)
       response[i, ] = as.numeric(Z[, 1] > 0)
       activity[i, ] = Z[, 2]
     }
     
     activity_s1 = activity[, 1:n1]
     bayes_cluster = NULL
-    #prob_rec = prob_upper_rec = prob_lower_rec = NULL 
-    #mu_rec = mu_upper_rec = mu_lower_rec = NULL 
-    mu_rec = NULL
     for (i in 1:nrow(s1_cluster)) {
       group = s1_cluster[i, ]
-      res = post_s1_acti(activity_s1, n1, group, cutoff_int2)
+      res = post_s1_acti(activity_s1, n1, group, cutoff_int2, mu0, n.adapt, n.burn, n.iter)
       bayes_cluster = c(bayes_cluster, res$factor)
-      this_acti = res$mu2_rec
-      mu_rec = rbind(mu_rec, as.numeric(rowMeans(this_acti > 0) > reject_rate))
     }
     index = which.max(bayes_cluster)
     post_cluster_all[, m] = s1_cluster[index, ]
-    reject_acti[, m] = mu_rec[index, ]
     
     setTxtProgressBar(pb, ((j - 1) * M +  m) / (l * M))
   }
-  early1[, j] = rowMeans(post_cluster_all == 1)
-  early2[, j] = rowMeans(reject_acti)
+  early2[, j] = rowMeans(post_cluster_all == 1)
 }
-
-early1
-early2
-
-
 
 
 ######## response
 epsilon_seq = seq(0, 0.3, by = 0.02)
 l = length(epsilon_seq)
-early1 = early2 = matrix(0, N, l)
+early1 = matrix(0, N, l)
 pb = txtProgressBar(style = 3)
 for (j in 1:l) {
   epsilon_1 = epsilon_seq[j]
   cutoff_int1 = qnorm(p0[1] + epsilon_1) - qnorm(p0[1])
-  #cutoff_int2 = epsilon_2
   for (m in 1:M) {
-    #set.seed(m)
+    set.seed(m)
     ## Data generation
     for (i in 1:N) {
-      Z = mvrnorm(ninter, c(mu1[i], mu2[i]), Sigma)
+      Z = mvrnorm(ninter, c(qnorm(prob)[i], acti[i]), Sigma)
       response[i, ] = as.numeric(Z[, 1] > 0)
       activity[i, ] = Z[, 2]
     }
     
     response_s1 = response[, 1:n1]
     bayes_cluster = NULL
-    #prob_rec = prob_upper_rec = prob_lower_rec = NULL 
-    #mu_rec = mu_upper_rec = mu_lower_rec = NULL 
-    prob_rec = NULL
     for (i in 1:nrow(s1_cluster)) {
       group = s1_cluster[i, ]
-      res = post_s1_resp(response_s1, n1, group, cutoff_int1)
+      res = post_s1_resp(response_s1, n1, group, cutoff_int1, p0, n.adapt, n.burn, n.iter)
       bayes_cluster = c(bayes_cluster, res$factor)
-      this_prob = pnorm(0, mean = qnorm(p0) + res$mu1_rec, sd = 1, lower.tail = FALSE)
-      prob_rec = rbind(prob_rec, as.numeric(rowMeans(this_prob > p0) > reject_rate))
     }
     index = which.max(bayes_cluster)
     post_cluster_all[, m] = s1_cluster[index, ]
-    reject_prob[, m] = prob_rec[index, ]
     
     setTxtProgressBar(pb, ((j - 1) * M +  m) / (l * M))
   }
   early1[, j] = rowMeans(post_cluster_all == 1)
-  early2[, j] = rowMeans(reject_prob)
 }
 
 early1
