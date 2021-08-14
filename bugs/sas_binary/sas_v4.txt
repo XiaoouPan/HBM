@@ -5,18 +5,18 @@ model {
     for (j in 1:ninter) {
       response[i, j] ~ dinterval(Z[i, j, 1], 0)
       activity[i, j] ~ dinterval(Z[i, j, 2], 0)
-      Z[i, j, 1:2] ~ dmnorm(c(mu1_h0[i] + mu1[i], mu2_h0[i] + mu2[i]), prec)
+      Z[i, j, 1:2] ~ dmnorm(c(mu1_h0[i] + mu1[i], mu2_h0[i] + mu2[i]), prec[i, , ])
     }
     mu1[i] <- ifelse(ss1[i] == 0, 0, diff1)
     mu2[i] <- ifelse(ss2[i] == 0, 0, diff2)
     ss1[i] ~ dbern(p1[i])
     ss2[i] ~ dbern(p2[i])
+    prec[i, 1, 1] <- 1.0 / (1 - rho[i] * rho[i])
+    prec[i, 1, 2] <- -rho[i] / (1 - rho[i] * rho[i])
+    prec[i, 2, 1] <- -rho[i] / (1 - rho[i] * rho[i])
+    prec[i, 2, 2] <- 1.0 / (1 - rho[i] * rho[i])
+    rho[i] ~ dunif(-1, 1)
   }
-  diff1 ~ dnorm(1, 1)T(0.5, )
-  diff2 ~ dnorm(1, 1)T(0.5, )
-  prec[1, 1] <- 1.0 / (1 - rho * rho)
-  prec[1, 2] <- -rho / (1 - rho * rho)
-  prec[2, 1] <- -rho / (1 - rho * rho)
-  prec[2, 2] <- 1.0 / (1 - rho * rho)
-  rho ~ dunif(-1, 1)
+  diff1 ~ dnorm(1, tau0)T(0, )
+  diff2 ~ dnorm(1, tau0)T(0, )
 }

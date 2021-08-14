@@ -24,6 +24,7 @@ s1_acti_sas = function(activity, N, n1, mu2_h0, n.adapt = 5000, n.burn = 5000, n
 post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.adapt = 5000, n.burn = 5000, n.iter = 10000) {
   p1 = 0.25 + 0.5 * as.numeric(rowMeans(response) > p0 + 0.15)
   p2 = 0.25 + 0.5 * as.numeric(rowMeans(activity) > a0 + 0.15)
+  tau0 = 1.0 / log(ninter * N)
   dat = list(response = response,
              activity = activity,
              N = N,
@@ -31,7 +32,8 @@ post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.ada
              p1 = p1,
              p2 = p2,
              mu1_h0 = mu1_h0, 
-             mu2_h0 = mu2_h0)
+             mu2_h0 = mu2_h0,
+             tau0 = tau0)
   Z = array(0, dim = c(N, ninter, 2))
   for (i in 1:N) {
     Z[i, , ] = mvrnorm(ninter, c(mu1_h0[i], mu2_h0[i]), matrix(c(1, 0.5, 0.5, 1), 2, 2))
@@ -49,7 +51,7 @@ post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.ada
                                           diff2 = 1,
                                           ss1 = ss10,
                                           ss2 = ss20,
-                                          rho = 0.5),
+                                          rho = rep(0.5, dat$N)),
                              n.adapt = n.adapt, quiet = TRUE), silent = TRUE)
   try(update(thismodel, n.burn, progress.bar = "none"), silent = TRUE)
   res.bugs = try(jags.samples(thismodel, 
@@ -57,6 +59,6 @@ post_sas = function(response, activity, N, ninter, p0, mu1_h0, a0, mu2_h0, n.ada
                               n.iter = n.iter, progress.bar = "none"), silent = TRUE)
   mu1_rec = matrix(res.bugs$mu1, N, n.iter)
   mu2_rec = matrix(res.bugs$mu2, N, n.iter)
-  rho = as.numeric(res.bugs$rho)
+  rho = matrix(res.bugs$rho, N, n.iter)
   return (list("mu1_rec" = mu1_rec, "mu2_rec" = mu2_rec, "rho" = rho))
 }
