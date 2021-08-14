@@ -28,8 +28,8 @@ rho0 = 0.75
 alpha = 0.026
 reject_rate = 1 - alpha ## For hypothesis testing
 
-prob = c(0.15, 0.15, 0.15, 0.45) ## true p
-acti = c(0.15, 0.15, 0.15, 0.45)  ## true activity
+prob = c(0.15, 0.15, 0.45, 0.45) ## true p
+acti = c(0.15, 0.15, 0.45, 0.45)  ## true activity
 mu1 = qnorm(prob) - qnorm(p0)
 mu2 = qnorm(acti) - qnorm(a0)
 
