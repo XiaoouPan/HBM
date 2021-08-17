@@ -223,6 +223,18 @@ xtable(report, digits = c(1, 1, rep(2, 5)))
 
 
 ### Plots of estimators
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/500trials/continuous_75/mix")
+post_cluster_all = as.matrix(read.csv("cluster.csv")[, -1])
+early_stop = as.matrix(read.csv("early.csv")[, -1])
+post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
+post_prob_lower_all = as.matrix(read.csv("prob_lower.csv")[, -1])
+post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
+post_acti_all = as.matrix(read.csv("acti.csv")[, -1])
+post_acti_lower_all = as.matrix(read.csv("acti_lower.csv")[, -1])
+post_acti_upper_all = as.matrix(read.csv("acti_upper.csv")[, -1])
+reject_weak = as.matrix(read.csv("rej_weak.csv")[, -1])
+reject_strong = as.matrix(read.csv("rej_strong.csv")[, -1])
+
 
 rst1 = c(post_prob_all[1, ], post_prob_all[2, ], post_prob_all[3, ], post_prob_all[4, ])
 rst2 = c(post_acti_all[1, ], post_acti_all[2, ], post_acti_all[3, ], post_acti_all[4, ])
