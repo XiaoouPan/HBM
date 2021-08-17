@@ -68,7 +68,7 @@ for (m in 1:M) {
   setTxtProgressBar(pb, m / M)
 }
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/Test_s2/4act")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/Test_s2/s2_4act")
 weak = cbind(as.matrix(read.csv("weak_015.csv")[, -1]), 
              as.matrix(read.csv("weak_018.csv")[, -1]), 
              as.matrix(read.csv("weak_021.csv")[, -1]),
@@ -81,15 +81,15 @@ strong = cbind(as.matrix(read.csv("strong_015.csv")[, -1]),
              as.matrix(read.csv("strong_027.csv")[, -1]))
 
 ## Weak
-k = 1
+k = 2
 rst1 = c(rep(0.15, 5), rep(0.18, 5), rep(0.21, 5), rep(0.24, 5), rep(0.27, 5))
 rst2 = rep(c(0.5, 0.6, 0.7, 0.8, 0.9), 5)
-rst3 = weak[k, ] / 50
+rst3 = weak[k, ] / 100
 dat = as.data.frame(cbind(rst1, rst2, rst3))
 colnames(dat) = c("Response", "Activity", "Power")
 
 setwd("~/Dropbox/Mayo-intern/HBM_Simulation")
-tikz("plot.tex", standAlone = TRUE, width = 5, height = 5)
+tikz("plot.tex", standAlone = TRUE, width = 6, height = 5)
 ggplot(dat, aes(x = Response, y = Activity, z = Power)) + geom_contour_filled() + 
   xlim(0.15, 0.27) + ylim(0.5, 0.9) + 
   scale_x_continuous(breaks = seq(0.15, 0.27, by = 0.03)) + 
@@ -99,15 +99,15 @@ dev.off()
 tools::texi2dvi("plot.tex", pdf = T)
 
 ### Strong
-k = 3
+k = 1
 rst1 = c(rep(0.15, 5), rep(0.18, 5), rep(0.21, 5), rep(0.24, 5), rep(0.27, 5))
 rst2 = rep(c(0.5, 0.6, 0.7, 0.8, 0.9), 5)
-rst3 = strong[k, ] / 50
+rst3 = strong[k, ] / 100
 dat = as.data.frame(cbind(rst1, rst2, rst3))
 colnames(dat) = c("Response", "Activity", "Power")
 
 setwd("~/Dropbox/Mayo-intern/HBM_Simulation")
-tikz("plot.tex", standAlone = TRUE, width = 5, height = 5)
+tikz("plot.tex", standAlone = TRUE, width = 6, height = 5)
 ggplot(dat, aes(x = Response, y = Activity, z = Power)) + geom_contour_filled(aes(z = Power)) + 
   xlim(0.15, 0.27) + ylim(0.5, 0.9) + 
   scale_x_continuous(breaks = seq(0.15, 0.27, by = 0.03)) + 
