@@ -17,6 +17,8 @@ model {
     prec[i, 2, 2] <- 1.0 / (1 - rho[i] * rho[i])
     rho[i] ~ dunif(-1, 1)
   }
-  diff1 ~ dnorm(1, tau0)T(0, )
-  diff2 ~ dnorm(1, tau0)T(0, )
+  diff1 ~ dnorm(1, tau1)T(0, )
+  diff2 ~ dnorm(1, tau2)T(0, )
+  tau1 ~ dgamma(0.001, 0.001)
+  tau2 ~ dgamma(0.001, 0.001)
 }

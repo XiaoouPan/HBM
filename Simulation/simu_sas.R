@@ -45,6 +45,7 @@ post_acti_all = post_acti_upper_all = post_acti_lower_all = matrix(NA, N, M)
 #cluster = getCluster(N) ## 15 or 41 possibilities in total
 #trans = getTrans(cluster)
 
+
 pb = txtProgressBar(style = 3)
 for (m in 1:M) {
   set.seed(m)
