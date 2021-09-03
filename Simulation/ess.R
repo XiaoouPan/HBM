@@ -1,8 +1,11 @@
+library(ggplot2)
+library(tikzDevice)
+
 rm(list = ls())
 
 n = 5000
 p0 = 0.15
-m = 500
+m = 100
 var.pri = seq(2, 50, length.out = m)
 ess = rep(0, m)
 pb = txtProgressBar(style = 3)
@@ -17,6 +20,23 @@ for (i in 1:m) {
   ess[i] = a + b
   setTxtProgressBar(pb, i / m)
 }
-idx = which(ess > 0.55 & ess < 0.6)
-var.pri[idx]
-plot(var.pri, ess, type = "l")
+
+var.pri = rep(var.pri, 3)
+ess = c(ess, rep(0.5, m), rep(0.6, m))
+dat = as.data.frame(cbind(var.pri, ess))
+colnames(dat) = c("var", "ess")
+dat$type = c(rep("ess", m), rep("lower", m),  rep("upper", m))
+dat$type = factor(dat$type, levels = c("ess", "lower", "upper"))
+
+setwd("~/Dropbox/Mayo-intern/Spike-and-slab")
+tikz("plot.tex", standAlone = TRUE, width = 7, height = 5)
+ggplot(dat, aes(x = var, y = ess, color = type)) +
+  geom_line(aes(y = ess, color = type, linetype = type), size = 3) + 
+  scale_linetype_manual(values = c("solid", "dashed", "dashed")) +
+  theme_bw() + xlab("Candidates of $\\sigma^2$") + 
+  ylab("Effective sample size") + 
+  theme(legend.position = "none", axis.text = element_text(size = 15), axis.title = element_text(size = 20))
+dev.off()
+tools::texi2dvi("plot.tex", pdf = T)
+
+
