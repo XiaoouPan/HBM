@@ -99,9 +99,7 @@ report
 
 
 #### Results
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/mode")
-#prob = c(0.15, 0.15, 0.15, 0.45) ## true p
-#acti = c(3, 3, 4, 4)  ## true activity
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/1act")
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
 post_prob_lower_all = as.matrix(read.csv("prob_lower.csv")[, -1])
 post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
