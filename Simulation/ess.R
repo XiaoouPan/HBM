@@ -32,9 +32,23 @@ for (i in 1:m) {
   b = a * (1 - E) / E
   ess2[i] = a + b
 }
+p0 = 0.18
+pa = p0 + 0.3
+ess3 = rep(0, m)
+for (i in 1:m) {
+  w = rbinom(n, 1, 0.5)
+  mu = w * rnorm(n, qnorm(pa) - qnorm(p0), var.pri[i])
+  prob = pnorm(qnorm(p0) + mu)
+  E = mean(prob)
+  V = var(prob)
+  a = (1 - E) * E^2 / V - E
+  b = a * (1 - E) / E
+  ess3[i] = a + b
+}
+
 
 var.pri = rep(var.pri, 5)
-ess = c(ess1, ess2, ess3, rep(0.5, m), rep(0.6, m))
+ess = c(ess1, ess2, ess3, rep(0.4, m), rep(0.6, m))
 dat = as.data.frame(cbind(var.pri, ess))
 colnames(dat) = c("var", "ess")
 dat$type = c(rep("ess1", m), rep("ess2", m), rep("ess3", m), rep("lower", m),  rep("upper", m))
