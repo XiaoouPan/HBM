@@ -99,7 +99,7 @@ report
 
 
 #### Results
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/0act")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/mix2")
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
 post_prob_lower_all = as.matrix(read.csv("prob_lower.csv")[, -1])
 post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
