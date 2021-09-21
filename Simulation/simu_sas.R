@@ -5,6 +5,7 @@ library(gtools)
 library(mvtnorm)
 library(pbivnorm)
 library(dplyr)
+library(mvtnorm)
 library(tikzDevice)
 library(ggplot2)
 library(xtable)
@@ -51,9 +52,10 @@ for (m in 1:M) {
   set.seed(m)
   ## Data generation
   for (i in 1:N) {
-    Z = mvrnorm(ninter, c(qnorm(prob)[i], qnorm(acti)[i]), Sigma)
-    response[i, ] = as.numeric(Z[, 1] > 0)
-    activity[i, ] = as.numeric(Z[, 2] > 0)
+    #Z = mvrnorm(ninter, c(0, 0), Sigma)
+    Z = rmvt(ninter, Sigma, 2)
+    response[i, ] = as.numeric(Z[, 1] + qnorm(prob)[i] > 0)
+    activity[i, ] = as.numeric(Z[, 2] + qnorm(acti)[i] > 0)
   }
   
   ## Final stage
@@ -99,7 +101,7 @@ report
 
 
 #### Results
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/mode")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas/0act")
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
 post_prob_lower_all = as.matrix(read.csv("prob_lower.csv")[, -1])
 post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
