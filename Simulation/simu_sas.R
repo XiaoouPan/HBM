@@ -101,7 +101,7 @@ report
 
 
 #### Results
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas_diff_null/mix")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas_equal_null/mix")
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
 post_prob_lower_all = as.matrix(read.csv("prob_lower.csv")[, -1])
 post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
@@ -122,7 +122,7 @@ report1 = cbind(rowMeans(post_prob_all, na.rm = TRUE),
                rowMeans(reject_weak, na.rm = TRUE) * 100,
                rowMeans(reject_strong, na.rm = TRUE) * 100)
 
-setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas_diff_null/mix2")
+setwd("~/Dropbox/Mayo-intern/HBM_Simulation/Results/sas_equal_null/mix2")
 post_prob_all = as.matrix(read.csv("prob.csv")[, -1])
 post_prob_lower_all = as.matrix(read.csv("prob_lower.csv")[, -1])
 post_prob_upper_all = as.matrix(read.csv("prob_upper.csv")[, -1])
